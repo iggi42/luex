@@ -1,0 +1,186 @@
+---
+stages:
+  - deps
+  - build
+  - lint
+  - test
+  - docs
+
+default:
+  tags:
+    - linux
+    - docker
+
+.parallel:
+  parallel:
+    matrix:
+      - ELIXIR: ["1.13.4", "1.14.2"]
+        ERLANG: ["24.3.4.6", "25.1.2"]
+        ALPINE: "3.16.2"
+
+variables:
+  MIX_ENV: test
+  POSTGRES: "15.1"
+
+deps:
+  extends: .parallel
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/hexpm/elixir:${ELIXIR}-erlang-${ERLANG}-alpine-${ALPINE}
+  stage: deps
+  before_script:
+    - apk add git build-base gcc abuild binutils
+    - mix local.hex --force
+    - mix local.rebar --force
+  script:
+    - mix deps.get
+  retry: 2
+  cache:
+    - key: deps-ex${ELIXIR}-er${ERLANG}-${CI_COMMIT_REF_SLUG}
+      paths:
+        - deps/
+      when: on_success
+
+build:
+  extends: .parallel
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/hexpm/elixir:${ELIXIR}-erlang-${ERLANG}-alpine-${ALPINE}
+  stage: build
+  needs:
+    - deps
+  before_script:
+    - apk add git build-base gcc abuild binutils
+    - mix local.hex --force
+    - mix local.rebar --force
+  script:
+    - env
+    - mix deps.compile
+    - mix compile
+    # build again in dev for dialyzer
+    - MIX_ENV=dev mix deps.compile
+    - MIX_ENV=dev mix compile
+  retry: 1
+  cache:
+    - key: deps-ex${ELIXIR}-er${ERLANG}-${CI_COMMIT_REF_SLUG}
+      paths:
+        - deps/
+      policy: pull
+    - key: build-ex${ELIXIR}-er${ERLANG}-${CI_COMMIT_REF_SLUG}
+      paths:
+        - _build/
+      when: on_success
+
+credo:
+  extends: .parallel
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/hexpm/elixir:${ELIXIR}-erlang-${ERLANG}-alpine-${ALPINE}
+  stage: lint
+  needs:
+    - deps
+    - build
+  before_script:
+    - apk add git
+    - mix local.hex --force
+    - mix local.rebar --force
+  script:
+    - mix credo --strict
+  cache:
+    - key: deps-ex${ELIXIR}-er${ERLANG}-${CI_COMMIT_REF_SLUG}
+      paths:
+        - deps/
+      policy: pull
+    - key: build-ex${ELIXIR}-er${ERLANG}-${CI_COMMIT_REF_SLUG}
+      paths:
+        - _build/
+      policy: pull
+
+format:
+  extends: .parallel
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/hexpm/elixir:${ELIXIR}-erlang-${ERLANG}-alpine-${ALPINE}
+  stage: lint
+  needs:
+    - deps
+    - build
+  before_script:
+    - apk add git
+    - mix local.hex --force
+    - mix local.rebar --force
+  script:
+    - mix format --check-formatted
+  cache:
+    - key: deps-ex${ELIXIR}-er${ERLANG}-${CI_COMMIT_REF_SLUG}
+      paths:
+        - deps/
+      policy: pull
+    - key: build-ex${ELIXIR}-er${ERLANG}-${CI_COMMIT_REF_SLUG}
+      paths:
+        - _build/
+      policy: pull
+
+dialyzer:
+  extends: .parallel
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/hexpm/elixir:${ELIXIR}-erlang-${ERLANG}-alpine-${ALPINE}
+  stage: lint
+  needs:
+    - deps
+    - build
+  variables:
+    # dialyzer does not work correctly in test with mox
+    MIX_ENV: dev
+  before_script:
+    - apk add git
+    - mix local.hex --force
+    - mix local.rebar --force
+  script:
+    - mix dialyzer --no-compile
+  cache:
+    - key: dialyzer-ex${ELIXIR}-er${ERLANG}
+      paths:
+        - _build/**/*.plt
+      when: always
+    - key: deps-ex${ELIXIR}-er${ERLANG}-${CI_COMMIT_REF_SLUG}
+      paths:
+        - deps/
+      policy: pull
+    - key: build-ex${ELIXIR}-er${ERLANG}-${CI_COMMIT_REF_SLUG}
+      paths:
+        - _build/
+      policy: pull
+
+test:
+  extends: .parallel
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/hexpm/elixir:${ELIXIR}-erlang-${ERLANG}-alpine-${ALPINE}
+  services:
+    - ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/postgres:${POSTGRES}-alpine
+  stage: test
+  needs:
+    - deps
+    - build
+  coverage: /(\d+\.\d+)%\s+|\s+Total/
+  before_script:
+    - apk add git
+    - mix local.hex --force
+    - mix local.rebar --force
+  script:
+    - mix test --no-start
+    - mix test --no-start --cover --no-color || true
+  artifacts:
+    when: always
+    reports:
+      junit: _build/test/lib/**/test-junit-report.xml
+  cache:
+    - key: deps-ex${ELIXIR}-er${ERLANG}-${CI_COMMIT_REF_SLUG}
+      paths:
+        - deps/
+      policy: pull
+    - key: build-ex${ELIXIR}-er${ERLANG}-${CI_COMMIT_REF_SLUG}
+      paths:
+        - _build/
+      policy: pull
+
+lint_bash:
+  image: koalaman/shellcheck-alpine:stable
+  stage: lint
+  script:
+    - shellcheck -a -o all .envrc
+    - shellcheck -a -o all run.sh
+    - shellcheck -a -o all migrate.sh
+    - shellcheck -a -o all git-hooks/pre-commit.sh
+    - shellcheck -a -o all docer/kaldi/download-librispeech-nnet2.sh
+  needs: []
