@@ -30,15 +30,18 @@ defmodule Luex.MixProject do
       {:ex_doc, ">= 0.0.0", runtime: false, only: [:dev]},
 
       # CI Test Reports
-      {:junit_formatter, "~> 3.3", runtime: false, only: [:test]},
+      {:junit_formatter, "~> 3.3", runtime: false, only: [:test]}
     ]
   end
 
   defp docs do
     [
       before_closing_head_tag: fn
-        :html -> "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>"
-        _ -> ""
+        :html ->
+          "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>"
+
+        _ ->
+          ""
       end,
       before_closing_body_tag: fn
         :html ->

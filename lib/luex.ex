@@ -9,7 +9,8 @@ defmodule Luex do
 
   #  record(:luerl, [])
   @opaque lua_vm ::
-            {:luerl, any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()}
+            {:luerl, any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+             any()}
 
   @opaque lua_chunk :: any()
   @type lua_value :: any()
@@ -33,5 +34,4 @@ defmodule Luex do
           reraise exc, __STACKTRACE__
       end
   end
-
 end
