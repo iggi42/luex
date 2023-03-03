@@ -3,11 +3,18 @@ defmodule Luex do
   Documentation for `Luex`.
   """
 
-  require Record
+  # require Record
   require Luex.Records, as: R
 
+  @typedoc """
+  A keypath describes a list of keys, to navigate nested tables.
+
+  For example ´package.path´  is a keypath with the elixir representation of `[:package, :path]`
+  """
+  @type keypath :: [atom()]
+
   @opaque lua_vm :: R.luerl_vm()
-  defguard is_lua_vm(v) when R.is_luerl_luerl(v)
+  defguard is_lua_vm(v) when R.is_luerl(v)
 
   @opaque lua_chunk :: any()
   @type lua_value :: any()
@@ -20,14 +27,15 @@ defmodule Luex do
   @spec init() :: lua_vm()
   defdelegate init, to: Luerl
 
-  @spec do_lua(lua_vm(), String.t(), [lua_value()]) :: {:ok, [lua_value()], lua_vm()}  | {:error, lua_error(), lua_vm()}
+  @spec do_lua(lua_vm(), String.t(), [lua_value()]) ::
+          {:ok, [lua_value()], lua_vm()} | {:error, lua_error(), lua_vm()}
   def do_lua(vm, program, args \\ []) do
     Luerl.call(vm, program, args)
   rescue
     e ->
       case e do
         %ErlangError{original: {:lua_error, reason, vm}} ->
-        {:error, reason, vm}
+          {:error, reason, vm}
 
         exc ->
           reraise exc, __STACKTRACE__
