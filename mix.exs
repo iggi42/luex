@@ -8,7 +8,8 @@ defmodule Luex.MixProject do
       elixir: "~> 1.13",
       docs: docs(),
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      dialyzer: dialyzer()
     ]
   end
 
@@ -36,6 +37,7 @@ defmodule Luex.MixProject do
 
   defp docs do
     [
+      extras: ["README.md"],
       before_closing_head_tag: fn
         :html ->
           "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>"
