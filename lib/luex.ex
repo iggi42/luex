@@ -16,7 +16,7 @@ defmodule Luex do
   @opaque lua_vm :: R.luerl_vm()
   defguard is_lua_vm(v) when R.is_luerl(v)
 
-  @opaque lua_chunk :: any()
+  @opaque lua_chunk :: R.erl_func() | R.funref()
   @type lua_value :: any()
 
   @typedoc """
