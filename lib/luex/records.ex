@@ -6,7 +6,10 @@ defmodule Luex.Records do
   require __MODULE__.Utils, as: U
 
   U.load_luerl_struct(:luerl, "luerl vm instance")
-  U.load_luerl_struct(:tstruct, "luerl table structure")
+
+  U.load_luerl_struct(:table, "interal luerl table type")
+  U.load_luerl_struct(:tstruct, "interal table structure")
+
   U.load_luerl_struct(:meta, "internal metatable represenation")
 
   U.load_luerl_struct(:tref, "internal table reference via index")

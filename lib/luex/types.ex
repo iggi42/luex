@@ -25,5 +25,12 @@ defmodule Luex.Types do
   """
   @type value :: any()
 
+  alias Luex.Records
 
+  @type lua_nil :: nil
+  @type lua_bool :: boolean()
+  @type lua_string :: String.t()
+  @type lua_number :: float()
+  @type lua_table :: Records.table()
+  @type lua_fun :: Records.erl_func() | Records.lua_func()
 end
