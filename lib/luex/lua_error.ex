@@ -5,7 +5,7 @@ defmodule Luex.LuaError do
 
   @impl Exception
   def message(%{reason: r, vm: vm}) when LTypes.is_vm(vm) do
-    #TODO implement a prober
+    # TODO implement a prober
     "TODO: " <> inspect(__MODULE__) <> ".message/1 " <> inspect(r)
   end
 
@@ -28,8 +28,11 @@ defmodule Luex.LuaError do
       rescue
         err in ErlangError ->
           case err do
-            unquote(__MODULE__).luerl_error(reason, vm) -> raise Luex.LuaError, reason: reason, vm: vm
-            e -> reraise e, __STACKTRACE__
+            unquote(__MODULE__).luerl_error(reason, vm) ->
+              raise Luex.LuaError, reason: reason, vm: vm
+
+            e ->
+              reraise e, __STACKTRACE__
           end
       end
     end

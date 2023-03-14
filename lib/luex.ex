@@ -16,8 +16,8 @@ defmodule Luex do
     end
   end
 
-  @spec do_chunk(LuaType.lua_vm(), LuaType.lua_chunk(), [LuaType.lua_value()])
-    :: {[LuaType.lua_value()], LuaType.lua_vm()}
+  @spec do_chunk(LuaType.lua_vm(), LuaType.lua_chunk(), [LuaType.lua_value()]) ::
+          {[LuaType.lua_value()], LuaType.lua_vm()}
   def do_chunk(vm, chunk, args \\ []) do
     LuaError.wrap do
       Luerl.call(vm, chunk, args)

@@ -3,5 +3,4 @@ defmodule LuexLuaErrorTest do
 
   test "" do
   end
-  
 end

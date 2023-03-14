@@ -3,8 +3,9 @@ defmodule Luex.ExtModule do
 
   # based on ExUnit.Case, especially register_test & test
   defmacro __using__() do
-    %{ module: mod } = __CALLER__
+    %{module: mod} = __CALLER__
     Module.register_attribute(mod, :luex_exts, accumulate: true)
+
     quote do
       @behaviour unquote(__MODULE__)
     end
@@ -28,5 +29,4 @@ defmodule Luex.ExtModule do
       end
     end
   end
-
 end

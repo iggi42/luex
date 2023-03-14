@@ -35,7 +35,7 @@ defmodule Luex.Records.Utils do
       Record.defrecord(unquote(name), unquote(record))
 
       @typedoc unquote(desc)
-      @opaque unquote(type) :: record(unquote(name), unquote(record_spec))
+      @type unquote(type) :: record(unquote(name), unquote(record_spec))
 
       @doc "Check if a value is of the `#{unquote(name)}` type."
       defguard unquote(guard)(v) when Record.is_record(v, unquote(name))
