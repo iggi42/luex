@@ -1,4 +1,6 @@
 defmodule Luex.Records.Utils do
+  require Logger
+
   @doc """
     Shorthand for loading records defined in luerl headers.
 
@@ -9,10 +11,18 @@ defmodule Luex.Records.Utils do
     The function to update will be called `\#{name}/2`.
     The create function will be called `\#{name}/2`.
   """
-  defmacro load_luerl_struct(name, desc) when is_atom(name) do
+  defmacro load_luerl_struct(name, desc, overwrite_type \\ %{}) when is_atom(name) do
     type = Macro.var(name, __MODULE__)
     guard = String.to_atom("is_#{name}")
     record = Record.extract(name, from_lib: "luerl/include/luerl.hrl")
+
+    record_spec =
+      Enum.map(record, fn
+        {k, _} ->
+          m = overwrite_type[k]
+          v = if m, do: m, else: quote(do: any())
+          {k, v}
+      end)
 
     quote do
       # TODO check if you can put this in an require hook? 
@@ -25,11 +35,7 @@ defmodule Luex.Records.Utils do
       Record.defrecord(unquote(name), unquote(record))
 
       @typedoc unquote(desc)
-      @opaque unquote(type) ::
-                record(
-                  unquote(name),
-                  unquote(Enum.map(record, fn {k, _} -> {k, quote(do: any())} end))
-                )
+      @opaque unquote(type) :: record(unquote(name), unquote(record_spec))
 
       @doc "Check if a value is of the `#{unquote(name)}` type."
       defguard unquote(guard)(v) when Record.is_record(v, unquote(name))

@@ -1,6 +1,6 @@
 defmodule Luex.Records do
   @moduledoc """
-  This module contains data 
+  This module contains extracted luerl records.
   """
 
   require __MODULE__.Utils, as: U
@@ -8,6 +8,8 @@ defmodule Luex.Records do
   U.load_luerl_struct(:luerl, "luerl vm instance")
   U.load_luerl_struct(:tstruct, "luerl table structure")
   U.load_luerl_struct(:meta, "internal metatable represenation")
+
+  U.load_luerl_struct(:tref, "internal table reference via index")
 
   U.load_luerl_struct(:funref, """
   internal reference to a lua function
@@ -19,7 +21,11 @@ defmodule Luex.Records do
   internal represenation of a lua function, defined in lua.
   """)
 
-  U.load_luerl_struct(:erl_func, """
-  internal represenation of a lua function, defined in BEAM function (written in Erlang / Elixir / etc)
-  """)
+  U.load_luerl_struct(
+    :erl_func,
+    """
+    internal represenation of a lua function, defined in BEAM function (written in Erlang / Elixir / etc)
+    """,
+    code: ([Luex.lua_value()], Luex.lua_vm() -> {[Luex.lua_value()], Luex.lua_vm()})
+  )
 end
