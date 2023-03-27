@@ -1,16 +1,14 @@
 defmodule Luex.LuaError do
-  defexception [:reason, :vm]
-
-  require Luex.Types, as: LTypes
+  defexception [:reason, :vm, :og]
 
   @impl Exception
-  def message(%{reason: r, vm: vm}) when LTypes.is_vm(vm) do
-    # TODO implement a prober
-    "TODO: " <> inspect(__MODULE__) <> ".message/1 " <> inspect(r)
+  def message(%{reason: r, vm: _vm}) do
+    # TODO implement a prober error message
+    "Lua Error: " <> inspect(__MODULE__) <> ".message/1 " <> inspect(r)
   end
 
   @doc """
-    macro to create the pattern of the expection luerl throws.
+    macro pattern match the lua errors luerl throws.
   """
   defmacro luerl_error(reason, vm) do
     quote do
@@ -29,10 +27,10 @@ defmodule Luex.LuaError do
         err in ErlangError ->
           case err do
             unquote(__MODULE__).luerl_error(reason, vm) ->
-              raise Luex.LuaError, reason: reason, vm: vm
+              raise Luex.LuaError, reason: reason, vm: vm, og: err
 
-            e ->
-              reraise e, __STACKTRACE__
+            _ ->
+              reraise err, __STACKTRACE__
           end
       end
     end

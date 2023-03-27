@@ -1,5 +1,5 @@
-defmodule Luex.Records.Utils do
-  require Logger
+defmodule Luex.Utils do
+  @moduledoc false
 
   @doc """
     Shorthand for loading records defined in luerl headers.
@@ -13,6 +13,7 @@ defmodule Luex.Records.Utils do
   """
   defmacro load_luerl_struct(name, desc, overwrite_type \\ %{}) when is_atom(name) do
     type = Macro.var(name, __MODULE__)
+    # credo:disable-for-next-line Credo.Check.Warning.UnsafeToAtom
     guard = String.to_atom("is_#{name}")
     record = Record.extract(name, from_lib: "luerl/include/luerl.hrl")
 
