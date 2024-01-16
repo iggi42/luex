@@ -16,7 +16,7 @@ defmodule Luex do
   @typedoc """
   A keypath describes a list of keys, to navigate nested tables.
 
-  For example ´package.path´  is a keypath with the elixir representation of `[:package, :path]`
+  For example `package.path`  is a keypath with the elixir representation of `[:package, :path]`.
   """
   @type keypath() :: [atom()]
 
