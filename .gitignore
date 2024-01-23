@@ -24,3 +24,6 @@ luex-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# ignore lua test suites
+/test/lua-*-tests
