@@ -141,10 +141,24 @@ defmodule Luex do
   @spec init() :: vm()
   defdelegate init, to: Luerl
 
+  @doc """
+  JUST AN IDEA. NOT IMPLEMENTED.
+  See `luerl/src/luerl_sandbox.erl` for ideas / backend.
+  """
+  @spec init_sandbox() :: vm()
+  def init_sandbox, do: throw(:not_implemented)
+
   @spec do_inline(vm(), String.t()) :: {[lua_value()], vm()}
   def do_inline(vm, program) do
     Luex.LuaError.wrap do
       Luerl.do(vm, program)
+    end
+  end
+
+  @spec eval_file(vm(), Path.t()) :: {[lua_value()], vm()}
+  def eval_file(vm, path) do
+    Luex.LuaError.wrap do
+      Luerl.dofile(vm, to_charlist(path))
     end
   end
 

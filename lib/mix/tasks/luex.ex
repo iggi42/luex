@@ -1,25 +1,57 @@
 defmodule Mix.Tasks.Luex do
   use Mix.Task
 
-  def run([run_me]) do
-    case do_file(run_me) do
-      {:ok, result} ->
-        IO.puts("result")
-        result |> inspect(pretty: true) |> IO.puts()
+  @impl Mix.Task
+  def run(argv) do
+    argv
+    |> OptionParser.parse(
+      aliases: [
+        e: :eval,
+        h: :help,
+        i: :interactive
+      ],
+      strict: [
+        eval: :string,
+        help: :boolean,
+        interactive: :boolean
+      ]
+    )
+    |> execute()
+  end
 
-      {:error, warn, error} ->
-        IO.puts("execution failed")
-        IO.puts("")
-        IO.puts("warnings")
-        warn |> inspect(pretty: true) |> IO.puts()
-        IO.puts("")
-        IO.puts("errors")
-        error |> inspect(pretty: true) |> IO.puts()
+  defp execute({_, _, errors}) when errors != [],
+    do: useage(:stderr)
+
+  defp execute({args, [], []}) do
+    cond do
+      Keyword.get(args, :help) ->
+        useage(:stdio)
+
+      Keyword.has_key?(args, :eval) ->
+        args
+        |> Keyword.get(:eval)
+        |> do_file()
     end
   end
 
-  defp do_file(path) do
-    Luerl.init()
-    |> Luerl.evalfile(to_charlist(path))
+  defp do_file(run_me) do
+    vm = Luex.init()
+
+    case Luerl.evalfile(vm, to_charlist(run_me)) do
+      {:ok, result} ->
+        IO.puts("result: #{inspect(result, pretty: true)}")
+
+      {:error, warn, error} ->
+        IO.puts("execution failed")
+        IO.puts("warnings: #{inspect(warn, pretty: true)}\n")
+        IO.puts("errors: #{inspect(error, pretty: true)}\n")
+    end
+  end
+
+  defp useage(device) do
+    IO.puts(device, """
+      useage help
+      todo :)
+    """)
   end
 end
