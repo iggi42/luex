@@ -5,7 +5,7 @@ defmodule Luex.MixProject do
     [
       app: :luex,
       version: "0.1.0",
-      elixir: "~> 1.13",
+      elixir: "~> 1.17",
       docs: docs(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -23,15 +23,15 @@ defmodule Luex.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:luerl, github: "rvirding/luerl"},
+      {:luerl, github: "rvirding/luerl", tag: "v1.2.3"},
 
       # development tools
-      {:credo, "~> 1.6", runtime: false, only: [:dev, :test], override: true},
-      {:dialyxir, "~> 1.2", runtime: false, only: [:dev]},
+      {:credo, "~> 1.7", runtime: false, only: [:dev, :test], override: true},
+      {:dialyxir, "~> 1.4", runtime: false, only: [:dev]},
       {:ex_doc, ">= 0.0.0", runtime: false, only: [:dev]},
 
       # CI Test Reports
-      {:junit_formatter, "~> 3.3", runtime: false, only: [:test]}
+      # {:junit_formatter, "~> 3.3", runtime: false, only: [:test]}
     ]
   end
 
