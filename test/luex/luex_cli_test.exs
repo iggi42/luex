@@ -1,5 +1,6 @@
 defmodule LuexCliTest do
-  use ExUnit.Case
+  use ExUnit.Case, register: false
+  # turned off, cli is not a prio
 
   alias Luex.Cli
 
