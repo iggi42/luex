@@ -19,9 +19,14 @@ defmodule Luex.Table do
 
   @type input() :: %{key() => Luex.lua_value()}
 
+  @type output() :: %{key() => map()}
+
+  @doc """
+  allocate a new table in the virtual machine
+  """
   @spec new(Luex.vm(), map()) :: {t(), Luex.vm()}
   def new(vm, input) when Luex.is_vm(vm) and is_map(input) do
-    input |> Map.to_list() |> :luerl_heap.alloc_table(vm)
+    :luerl_heap.alloc_table(input, vm)
   end
 
   @doc """
@@ -36,10 +41,17 @@ defmodule Luex.Table do
 
   @spec get_data(Luex.vm(), t()) :: %{key() => Luex.lua_value()}
   def get_data(vm, tref) do
-    vm
-    |> get_tstruct(tref)
-    |> Luex.Records.tstruct(:data)
+    get_tstruct(tref, vm) # |> Luex.Records.tstruct(:data)
+    # cond do
+    #   :array.is_array(data) -> :array.to_orddict(data)
+    #   is_list(data) -> data
+    # end
   end
+
+  # @spec decode_tstruct(Luex.vm(), Luex.Records.tstruct()) :: 
+  # def decode_tstruct(vm, tref) do
+  #   
+  # end
 
   @spec get_tstruct(Luex.vm(), t()) :: Luex.Records.tstruct()
   defp get_tstruct(vm, ref), do: :luerl_heap.get_table(ref, vm)

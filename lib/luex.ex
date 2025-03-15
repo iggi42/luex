@@ -68,6 +68,9 @@ defmodule Luex do
   @type lua_userdata() :: Luex.Records.usdref()
   defguard is_lua_userdata(v) when Luex.Records.is_usdref(v)
 
+  @typedoc """
+  representation
+  """
   @type lua_fun() :: Luex.Functions.t()
   defguard is_lua_fun(v) when Luex.Functions.is_fun(v)
 
@@ -86,7 +89,7 @@ defmodule Luex do
           | {:userdata, any()}
 
   @doc """
-    This is how elixir values are encoded into lua values.
+    This is how elixir values are encoded into lua values, by luerl.
     ```mermaid
     graph LR;
       ex_nil(nil):::elixir <---> lua_nil(nil):::lua;
@@ -138,6 +141,20 @@ defmodule Luex do
   def load_value(vm, {:userdata, payload}), do: :luerl_heap.alloc_userdata(payload, vm)
   def load_value(vm, f) when is_function(f, 2), do: Luex.Functions.new(vm, f)
 
+  @spec set_value(vm(), keypath(), lua_value()) :: vm()
+  def set_value(vm, keypath, value) do
+    vm
+  end
+
+  @spec get_value(vm(), keypath()) :: {lua_value(), vm()}
+  def get_value(vm, keypath) do
+    {nil, vm}
+  end
+
+
+  @doc """
+  create a new lua virutal machine
+  """
   @spec init() :: vm()
   defdelegate init, to: Luerl
 
@@ -148,6 +165,18 @@ defmodule Luex do
   @spec init_sandbox() :: vm()
   def init_sandbox, do: throw(:not_implemented)
 
+  @doc """
+  run a string as lua code in the given vm.
+
+  # Example
+
+
+    ```elixir
+    iex> vm0 = Luex.init()
+    iex> {[5], vm1} = Luex.do_inline(vm0, "return 3+2")
+    ```
+
+  """
   @spec do_inline(vm(), String.t()) :: {[lua_value()], vm()}
   def do_inline(vm, program) do
     Luex.LuaError.wrap do
@@ -155,8 +184,19 @@ defmodule Luex do
     end
   end
 
-  @spec eval_file(vm(), Path.t()) :: {[lua_value()], vm()}
-  def eval_file(vm, path) do
+  @doc """
+  run the lua file at `path` in the given vm.
+
+  # Example
+
+    ```elixir
+    iex> vm0 = Luex.init()
+    iex> {[5], vm1} = Luex.do_file(vm0, "./test/return_5.lua")
+    ```
+
+  """
+  @spec do_file(vm(), Path.t()) :: {[lua_value()], vm()}
+  def do_file(vm, path) do
     Luex.LuaError.wrap do
       Luerl.dofile(vm, to_charlist(path))
     end
@@ -168,4 +208,6 @@ defmodule Luex do
       Luerl.call(vm, chunk, args)
     end
   end
+
+
 end

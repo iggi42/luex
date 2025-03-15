@@ -1,5 +1,9 @@
 # Luex
 
+This is a wrapper around the great [luerl](https://github.com/rvirding/luerl).
+The main aim of this project is to make easier to use in elixir.
+This is mostly done via docs, typespecs and examples.
+
 **TODO: Add description**
 
 ## Installation

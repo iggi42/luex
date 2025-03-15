@@ -28,7 +28,7 @@ defmodule Luex.MixProject do
       # development tools
       {:credo, "~> 1.7", runtime: false, only: [:dev, :test], override: true},
       {:dialyxir, "~> 1.4", runtime: false, only: [:dev]},
-      {:ex_doc, ">= 0.0.0", runtime: false, only: [:dev]},
+      {:ex_doc, ">= 0.0.0", runtime: false, only: [:dev]}
 
       # CI Test Reports
       # {:junit_formatter, "~> 3.3", runtime: false, only: [:test]}

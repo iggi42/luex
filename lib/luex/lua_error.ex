@@ -4,7 +4,7 @@ defmodule Luex.LuaError do
   @impl Exception
   def message(%{reason: r, vm: _vm}) do
     # TODO implement a prober error message
-    "Lua Error: " <> inspect(__MODULE__) <> ".message/1 " <> inspect(r)
+    "Lua Error: #{inspect(__MODULE__)}.message/1 #{inspect(r)}"
   end
 
   @doc """

@@ -2,8 +2,9 @@
 - more documentation & examples, and -spec
 - property testing for Lua functions to ensure they can handle all lua values feed into them and only
 - different encoding of Lua values:
-  - tables should be maps, and arrays should be lists
-  - non-binary strings should user-data not strings.
+  - functions should return value and new vm state
+  - tables should be maps, and arrays should be lists (not sure)
+  - non-binary strings should user-data not strings. (not sure)
 
 # Elixir:
 - macro to define Luerl extensions
