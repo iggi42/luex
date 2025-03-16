@@ -27,3 +27,9 @@ luex-*.tar
 
 # ignore lua test suites
 /test/lua-*-tests
+
+# project isolated mix home
+/.mix/
+
+# direnv directory
+/.direnv/
