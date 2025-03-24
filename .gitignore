@@ -33,3 +33,5 @@ luex-*.tar
 
 # direnv directory
 /.direnv/
+
+/.mixhome/
