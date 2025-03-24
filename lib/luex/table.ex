@@ -19,33 +19,39 @@ defmodule Luex.Table do
 
   @type input() :: %{key() => Luex.lua_value()}
 
-  @type output() :: %{key() => map()}
-
   @doc """
   allocate a new table in the virtual machine
   """
-  @spec new(Luex.vm(), map()) :: {t(), Luex.vm()}
+  @spec new(Luex.vm(), %{key() => Luex.lua_value()}) :: {t(), Luex.vm()}
   def new(vm, input) when Luex.is_vm(vm) and is_map(input) do
     :luerl_heap.alloc_table(input, vm)
   end
 
-  @doc """
-  crashes with an erlang error from https://www.erlang.org/doc/man/maps.html#update_with-3 if the key isn't there.
-  uncool.
-  """
-  @spec update(Luex.vm(), t(), Luex.lua_value()) :: Luex.vm()
-  def update(vm, tref, _val) when Luex.is_vm(vm) and Luex.is_lua_table(tref) do
-    #   :luerl_heap.upd_table(tref, key,  vm)
-    vm
-  end
-
   @spec get_data(Luex.vm(), t()) :: %{key() => Luex.lua_value()}
   def get_data(vm, tref) do
-    get_tstruct(tref, vm) # |> Luex.Records.tstruct(:data)
-    # cond do
-    #   :array.is_array(data) -> :array.to_orddict(data)
-    #   is_list(data) -> data
-    # end
+    vm |> get_tstruct(tref) |> normalize()
+  end
+
+  # normalize from the luerl represenation of a table (array, map, orddict, etc)
+  @spec normalize(Luex.Records.tstruct() | Luex.Records.table()) :: %{key() => Luex.lua_value()}
+  defp normalize(table) when Luex.Records.is_table(table) do
+    # heavily inspiried by luerl: src/luerl.erl : 422ff
+    arr = Luex.Records.table(table, :a)
+    dict = Luex.Records.table(table, :d)
+    fun = fn k, v, acc -> [{k, v} | acc] end
+    ts = :ttdict.fold(fun, [], dict)
+    :array.sparse_foldr(fun, ts, arr) |> Map.new()
+  end
+
+  defp normalize(tstruct) when Luex.Records.is_tstruct(tstruct) do
+    throw("normalizing a tstruct!")
+    raw_data = tstruct |> Luex.Records.tstruct(:data) |> dbg()
+
+    cond do
+      :array.is_array(raw_data) -> raw_data |> :array.to_list() |> Map.new()
+      is_list(raw_data) -> Map.new(raw_data)
+      is_map(raw_data) -> raw_data
+    end
   end
 
   # @spec decode_tstruct(Luex.vm(), Luex.Records.tstruct()) :: 

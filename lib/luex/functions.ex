@@ -8,7 +8,7 @@ defmodule Luex.Functions do
   @type input() :: (any(), any() -> {[Luex.lua_value()], Luex.vm()})
 
   @spec new(Luex.vm(), input()) :: {t(), Luex.vm()}
-  def new(vm, input) do
+  def new(_vm, _input) do
     throw(:notimplemented)
   end
 end

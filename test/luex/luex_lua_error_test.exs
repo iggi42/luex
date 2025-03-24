@@ -19,17 +19,16 @@ defmodule LuexLuaErrorTest do
   end
 
   describe "wrap/1" do
-  test "convert lua error to elixir exception" do
-    vm = Luex.init()
+    test "convert lua error to elixir exception" do
+      vm = Luex.init()
 
-    assert_raise LuaError, ~r/Lua Error: .*error for exunit.*/, fn ->
-      LuaError.wrap do
-        Luerl.do(vm, "error([[error for exunit]])")
+      assert_raise LuaError, ~r/Lua Error: .*error for exunit.*/, fn ->
+        LuaError.wrap do
+          Luerl.do(vm, "error([[error for exunit]])")
+        end
       end
     end
   end
-  end
-
 
   # TODO pcall test (with and without div by 0)
 end

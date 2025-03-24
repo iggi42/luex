@@ -9,11 +9,27 @@ defmodule LuexTest do
     end
   end
 
-  describe "init_sandbox/0" do
-    test "create an contained lua virtual machine"
+  describe "set_value/3" do
+    test "direct global level" do
+      vm0 = Luex.init()
+      vm1 = Luex.set_value(vm0, ["a"], "Täääst")
+      assert {["Täääst"], _vm} = Luex.do_inline(vm1, "return a")
+    end
+
+    test "happy path: a.b.c = [[Test]]" do
+      vm0 = Luex.init()
+      vm1 = Luex.set_value(vm0, ["a", "b", "c"], "Test")
+
+      assert {["Test"], _vm2} = Luex.do_inline(vm1, "return a.b.c")
+    end
   end
 
-  describe "set_value/3" do
+  describe "get_value/2" do
+    test "happy path: a.b.c = [[Test]]; return a" do
+      vm0 = Luex.init()
+      {_, vm1} = Luex.do_inline(vm0, "a = [[Test]]")
+      assert {"Test", _vm2} = Luex.get_value(vm1, ["a"])
+    end
   end
 
   describe "do_inline/2" do

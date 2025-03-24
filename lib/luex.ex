@@ -16,9 +16,9 @@ defmodule Luex do
   @typedoc """
   A keypath describes a list of keys, to navigate nested tables.
 
-  For example `package.path`  is a keypath with the elixir representation of `[:package, :path]`.
+  For example `package.path`  is a keypath with the elixir representation of `["package", "path"]`.
   """
-  @type keypath() :: [atom()]
+  @type keypath() :: [String.t()]
 
   @typedoc """
   This type can representation any lua type.
@@ -75,6 +75,12 @@ defmodule Luex do
   defguard is_lua_fun(v) when Luex.Functions.is_fun(v)
 
   @type lua_chunk() :: Luex.Records.erl_func() | Luex.Records.funref()
+  defguard is_chunk(v) when Luex.Records.is_erl_func(v) or Luex.Records.is_funref(v)
+
+  defguard is_lua_value(value)
+           when is_lua_nil(value) or is_lua_bool(value) or is_lua_fun(value) or
+                  is_lua_string(value) or is_lua_number(value) or is_lua_table(value) or
+                  is_lua_userdata(value) or is_lua_fun(value)
 
   @typedoc """
   input type for encode/2
@@ -128,32 +134,45 @@ defmodule Luex do
 
   @doc """
     my attempt at doing Luerl.encode/2 better.
+
+   not sure if having such a function at all is a good idea
   """
   @spec load_value(vm(), input_value()) :: {lua_value(), vm()}
   # literals
-  def load_value(vm, nil), do: {nil, vm}
-  def load_value(vm, true), do: {true, vm}
-  def load_value(vm, false), do: {false, vm}
-  def load_value(vm, n) when is_number(n), do: {n, vm}
-  def load_value(vm, s) when is_binary(s), do: {s, vm}
+  def load_value(vm, nil) when is_vm(vm), do: {nil, vm}
+  def load_value(vm, true) when is_vm(vm), do: {true, vm}
+  def load_value(vm, false) when is_vm(vm), do: {false, vm}
+  def load_value(vm, n) when is_vm(vm) and is_number(n), do: {n, vm}
+  def load_value(vm, s) when is_vm(vm) and is_binary(s), do: {s, vm}
   # referenced values
-  def load_value(vm, m) when is_map(m), do: Luex.Table.new(vm, m)
-  def load_value(vm, {:userdata, payload}), do: :luerl_heap.alloc_userdata(payload, vm)
-  def load_value(vm, f) when is_function(f, 2), do: Luex.Functions.new(vm, f)
+  def load_value(vm, m) when is_vm(vm) and is_map(m), do: Luex.Table.new(vm, m)
+  def load_value(vm, {:userdata, payload}) when is_vm(vm), do: Luex.Userdata.new(vm, payload)
+  def load_value(vm, f) when is_vm(vm) and is_function(f, 2), do: Luex.Functions.new(vm, f)
 
   @spec set_value(vm(), keypath(), lua_value()) :: vm()
-  def set_value(vm, keypath, value) do
+  def set_value(vm, keypath, value) when is_vm(vm) and is_list(keypath) and is_lua_value(value) do
+    Luex.LuaError.wrap do
+      set_value1(vm, keypath, value)
+    end
+  end
+
+  defp set_value1(vm, keypath, value) do
     vm
+    |> load_base(keypath)
+    |> Luerl.set_table1(keypath, value)
   end
 
   @spec get_value(vm(), keypath()) :: {lua_value(), vm()}
-  def get_value(vm, keypath) do
-    {nil, vm}
+  def get_value(vm, keypath) when is_vm(vm) and is_list(keypath) do
+    Luex.LuaError.wrap do
+      get_value1(vm, keypath)
+    end
   end
 
+  defp get_value1(vm, keypath), do: Luerl.get_table1(vm, keypath)
 
   @doc """
-  create a new lua virutal machine
+  create a new lua virtual machine
   """
   @spec init() :: vm()
   defdelegate init, to: Luerl
@@ -173,7 +192,7 @@ defmodule Luex do
 
     ```elixir
     iex> vm0 = Luex.init()
-    iex> {[5], vm1} = Luex.do_inline(vm0, "return 3+2")
+    iex> {[5], _vm1} = Luex.do_inline(vm0, "return 3+2")
     ```
 
   """
@@ -191,7 +210,7 @@ defmodule Luex do
 
     ```elixir
     iex> vm0 = Luex.init()
-    iex> {[5], vm1} = Luex.do_file(vm0, "./test/return_5.lua")
+    iex> {[5], _vm1} = Luex.do_file(vm0, "./test/return_5.lua")
     ```
 
   """
@@ -209,5 +228,27 @@ defmodule Luex do
     end
   end
 
+  # copy from ava
+  # ensures tables are loaded with atleast an empty table
+  @spec load_base(Luex.vm(), Luex.keypath()) :: Luex.vm()
+  defp load_base(vm, keypath) when is_vm(vm) and is_list(keypath) do
+    load_base(vm, keypath, [])
+  end
 
+  defp load_base(vm, [_head], _ensured), do: vm
+
+  defp load_base(vm, [head | rest_target], ensured) do
+    target = ensured ++ [head]
+
+    {t, vm} = Luerl.get_table1(vm, target)
+
+    vm =
+      case t do
+        nil -> Luerl.set_table(vm, target, %{})
+        t when is_lua_table(t) -> vm
+        _other -> throw("[Luex] base type mismatch")
+      end
+
+    load_base(vm, rest_target, target)
+  end
 end
