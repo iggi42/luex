@@ -23,7 +23,7 @@ defmodule Luex.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:luerl, github: "rvirding/luerl", tag: "v1.2.3"},
+      {:luerl, "~> 1.2"},
 
       # development tools
       {:credo, "~> 1.7", runtime: false, only: [:dev, :test], override: true},
