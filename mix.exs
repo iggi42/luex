@@ -9,7 +9,14 @@ defmodule Luex.MixProject do
       docs: docs(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      dialyzer: dialyzer()
+      dialyzer: dialyzer(),
+      source_url: "https://github.com/iggi42/luex",
+      description: "an elixir interface to the great luerl",
+      package: [
+        licenses: ["Apache-2.0"],
+        maintainers: ["iggi42"],
+        files: ["lib", "mix.exs", "README.md", "LICENSE"]
+      ]
     ]
   end
 
