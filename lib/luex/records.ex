@@ -34,6 +34,16 @@ defmodule Luex.Records do
   """)
 
   U.load_luerl_struct(
+    :erl_mfa,
+    """
+    internal represenation of a lua function, defined in BEAM function via module and function name
+    """,
+    m: module(),
+    f: atom(),
+    a: non_neg_integer()
+  )
+
+  U.load_luerl_struct(
     :erl_func,
     """
     internal represenation of a lua function, defined in BEAM function (written in Erlang / Elixir / etc)

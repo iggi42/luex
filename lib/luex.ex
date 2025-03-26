@@ -8,7 +8,6 @@ defmodule Luex do
 
   require Luex.LuaError
   require Luex.Records
-  require Luex.Functions
 
   @type vm() :: Luex.Records.luerl()
   defguard is_vm(val) when Luex.Records.is_luerl(val)
@@ -58,29 +57,35 @@ defmodule Luex do
 
   @typedoc """
   references a table in a lua virtual machine.
+  See `Luex.Table` for more information on how to handle this value.
   """
   @type lua_table() :: Luex.Table.t()
   defguard is_lua_table(v) when Luex.Records.is_tref(v)
 
   @typedoc """
   references a userdata value in a lua virtual machine.
+  See `Luex.Userdata` for more information on how to handle this value.
   """
   @type lua_userdata() :: Luex.Records.usdref()
   defguard is_lua_userdata(v) when Luex.Records.is_usdref(v)
 
   @typedoc """
-  representation
+  representation of a lua function.
+  See `Luex.Functions` for more information on how to handle this value.
   """
-  @type lua_fun() :: Luex.Functions.t()
-  defguard is_lua_fun(v) when Luex.Functions.is_fun(v)
+  @type lua_fun() :: Luex.Records.erl_mfa() | Luex.Records.erl_func() | Luex.Records.lua_func()
+  defguard is_lua_fun(v) when Luex.Records.is_erl_mfa(v) or Luex.Records.is_erl_func(v) or Luex.Records.is_lua_func(v)
 
   @type lua_chunk() :: Luex.Records.erl_func() | Luex.Records.funref()
-  defguard is_chunk(v) when Luex.Records.is_erl_func(v) or Luex.Records.is_funref(v)
+  defguard is_lua_chunk(v) when Luex.Records.is_erl_func(v) or Luex.Records.is_funref(v)
 
+  @doc """
+  `is_lua_value` checks looks like any representation of a value in a lua vm
+  """
   defguard is_lua_value(value)
            when is_lua_nil(value) or is_lua_bool(value) or is_lua_fun(value) or
                   is_lua_string(value) or is_lua_number(value) or is_lua_table(value) or
-                  is_lua_userdata(value) or is_lua_fun(value)
+                  is_lua_userdata(value) or is_lua_fun(value) or is_lua_chunk(value)
 
   @typedoc """
   input type for encode/2
@@ -120,6 +125,8 @@ defmodule Luex do
     ```
     Tuples are only allowed as keyword lists items and to indicate userdata.
   """
+  @deprecated "luex will move away from luerl style encoding of values"
+  #TODO move the mermaid diagram to somewhere useful ()
   @spec encode(vm(), encoding_input()) :: {lua_value(), vm()}
   defdelegate encode(vm, encode_me), to: Luerl
 
@@ -133,7 +140,7 @@ defmodule Luex do
           | {:userdata, any()}
 
   @doc """
-    my attempt at doing Luerl.encode/2 better.
+    an attempt at doing Luerl.encode/2 better.
 
    not sure if having such a function at all is a good idea
   """
@@ -176,13 +183,6 @@ defmodule Luex do
   """
   @spec init() :: vm()
   defdelegate init, to: Luerl
-
-  @doc """
-  JUST AN IDEA. NOT IMPLEMENTED.
-  See `luerl/src/luerl_sandbox.erl` for ideas / backend.
-  """
-  @spec init_sandbox() :: vm()
-  def init_sandbox, do: throw(:not_implemented)
 
   @doc """
   run a string as lua code in the given vm.

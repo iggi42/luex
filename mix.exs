@@ -4,7 +4,7 @@ defmodule Luex.MixProject do
   def project do
     [
       app: :luex,
-      version: "0.1.0",
+      version: "0.0.1",
       elixir: "~> 1.17",
       docs: docs(),
       start_permanent: Mix.env() == :prod,

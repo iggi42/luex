@@ -27,13 +27,28 @@ defmodule Luex.Table do
     :luerl_heap.alloc_table(input, vm)
   end
 
+  @doc """
+  get data from a lua table
+
+  # Example
+  ```elixir
+  iex> {_, vm} = Luex.init() |> Luex.do_inline(\"\"\"
+  ...>   a = {}
+  ...>   a.x = 42
+  ...>   a.hello = "world"
+  ...> \"\"\")
+  iex> {a_tref, vm} = Luex.get_value(vm, ["a"])
+  iex> Luex.Table.get_data(vm, a_tref)
+  %{"x" => 42, "hello" => "world"}
+  ```
+  """
   @spec get_data(Luex.vm(), t()) :: %{key() => Luex.lua_value()}
   def get_data(vm, tref) do
-    vm |> get_tstruct(tref) |> normalize()
+    :luerl_heap.get_table(tref, vm) |> normalize()
   end
 
   # normalize from the luerl represenation of a table (array, map, orddict, etc)
-  @spec normalize(Luex.Records.tstruct() | Luex.Records.table()) :: %{key() => Luex.lua_value()}
+  @spec normalize(Luex.Records.table()) :: %{key() => Luex.lua_value()}
   defp normalize(table) when Luex.Records.is_table(table) do
     # heavily inspiried by luerl: src/luerl.erl : 422ff
     arr = Luex.Records.table(table, :a)
@@ -42,23 +57,4 @@ defmodule Luex.Table do
     ts = :ttdict.fold(fun, [], dict)
     :array.sparse_foldr(fun, ts, arr) |> Map.new()
   end
-
-  defp normalize(tstruct) when Luex.Records.is_tstruct(tstruct) do
-    throw("normalizing a tstruct!")
-    raw_data = tstruct |> Luex.Records.tstruct(:data) |> dbg()
-
-    cond do
-      :array.is_array(raw_data) -> raw_data |> :array.to_list() |> Map.new()
-      is_list(raw_data) -> Map.new(raw_data)
-      is_map(raw_data) -> raw_data
-    end
-  end
-
-  # @spec decode_tstruct(Luex.vm(), Luex.Records.tstruct()) :: 
-  # def decode_tstruct(vm, tref) do
-  #   
-  # end
-
-  @spec get_tstruct(Luex.vm(), t()) :: Luex.Records.tstruct()
-  defp get_tstruct(vm, ref), do: :luerl_heap.get_table(ref, vm)
 end

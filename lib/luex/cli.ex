@@ -1,7 +1,7 @@
 defmodule Luex.Cli do
   defmodule Options do
     @typedoc """
-    The result of parsed command line arguments.
+    The result of parsed command line arguments. (WIP)
 
     - **interactive**: Test
     """
