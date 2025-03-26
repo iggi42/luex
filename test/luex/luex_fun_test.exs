@@ -51,11 +51,14 @@ defmodule LuexFunTest do
 
   describe "call/3" do
     test "calling pure lua fun via elixir" do
-      {_, vm} = Luex.init() |> Luex.do_inline("""
+      {_, vm} =
+        Luex.init()
+        |> Luex.do_inline("""
         function c(a, b)
           return a .. " and " .. b
         end
         """)
+
       {fun, vm} = Luex.get_value(vm, ["c"])
       assert {["Elixir and Lua"], _vm} = Luex.Functions.call(vm, fun, ["Elixir", "Lua"])
     end

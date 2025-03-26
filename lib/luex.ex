@@ -74,7 +74,9 @@ defmodule Luex do
   See `Luex.Functions` for more information on how to handle this value.
   """
   @type lua_fun() :: Luex.Records.erl_mfa() | Luex.Records.erl_func() | Luex.Records.lua_func()
-  defguard is_lua_fun(v) when Luex.Records.is_erl_mfa(v) or Luex.Records.is_erl_func(v) or Luex.Records.is_lua_func(v)
+  defguard is_lua_fun(v)
+           when Luex.Records.is_erl_mfa(v) or Luex.Records.is_erl_func(v) or
+                  Luex.Records.is_lua_func(v)
 
   @type lua_chunk() :: Luex.Records.erl_func() | Luex.Records.funref()
   defguard is_lua_chunk(v) when Luex.Records.is_erl_func(v) or Luex.Records.is_funref(v)
@@ -126,7 +128,7 @@ defmodule Luex do
     Tuples are only allowed as keyword lists items and to indicate userdata.
   """
   @deprecated "luex will move away from luerl style encoding of values"
-  #TODO move the mermaid diagram to somewhere useful ()
+  # TODO move the mermaid diagram to somewhere useful ()
   @spec encode(vm(), encoding_input()) :: {lua_value(), vm()}
   defdelegate encode(vm, encode_me), to: Luerl
 
