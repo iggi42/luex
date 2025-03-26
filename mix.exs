@@ -48,6 +48,7 @@ defmodule Luex.MixProject do
   defp docs do
     [
       extras: ["README.md"],
+      source_ref: "master",
       before_closing_head_tag: fn
         :html ->
           "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>"
