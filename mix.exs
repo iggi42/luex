@@ -1,6 +1,8 @@
 defmodule Luex.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/iggi42/luex"
+
   def project do
     [
       app: :luex,
@@ -10,12 +12,13 @@ defmodule Luex.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       dialyzer: dialyzer(),
-      source_url: "https://github.com/iggi42/luex",
+      source_url: @source_url,
       description: "an elixir interface to the great luerl",
       package: [
         licenses: ["Apache-2.0"],
         maintainers: ["iggi42"],
-        files: ["lib", "mix.exs", "README.md", "LICENSE"]
+        files: ["lib", "mix.exs", "README.md", "LICENSE"],
+        links: %{ "GitHub" => @source_url }
       ]
     ]
   end
