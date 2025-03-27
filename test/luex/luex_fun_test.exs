@@ -64,7 +64,7 @@ defmodule LuexFunTest do
     end
 
     test "calling erl_mfa functions from luerl" do
-      vm = Luerl.init()
+      vm = Luex.init()
       {tostring, vm} = Luex.get_value(vm, ["tostring"])
       assert {["42"], _vm} = Luex.Functions.call(vm, tostring, [42])
     end
