@@ -234,7 +234,7 @@ defmodule Luex do
 
   # TODO write docs
   @spec load_lib(vm(), module()) :: vm()
-  def install(vm, module, args \\ []) do
+  def load_lib(vm, module, args \\ []) do
     {vm, table} = module.table(vm)
     target = args[:target] || module.target()
 
