@@ -22,6 +22,14 @@ defmodule LuexTest do
 
       assert {["Test"], _vm2} = Luex.do_inline(vm1, "return a.b.c")
     end
+
+    test "set multiple path (check no overwrite)" do
+      vm = Luex.init()
+        |> Luex.set_value( ["a", "b", "c"], "test1")
+        |> Luex.set_value( ["a", "c"], "test2")
+
+      assert {["test1", "test2"], _vm} = Luex.do_inline(vm, "return a.b.c, a.c")
+    end
   end
 
   describe "get_value/2" do

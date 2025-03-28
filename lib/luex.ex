@@ -127,6 +127,7 @@ defmodule Luex do
     ```
     Tuples are only allowed as keyword lists items and to indicate userdata.
   """
+  # maybe don't deprecate, but rename with emphasis on recursive loading, and only for _input_ into lua, not output (bc rec tables in lua)
   @deprecated "luex will move away from luerl style encoding of values"
   # TODO move the mermaid diagram to somewhere useful ()
   @spec encode(vm(), encoding_input()) :: {lua_value(), vm()}
@@ -223,11 +224,23 @@ defmodule Luex do
     end
   end
 
+  # TODO write docs
   @spec do_chunk(vm(), lua_chunk(), [lua_value()]) :: {[lua_value()], vm()}
   def do_chunk(vm, chunk, args \\ []) do
     Luex.LuaError.wrap do
       Luerl.call(vm, chunk, args)
     end
+  end
+
+  # TODO write docs
+  @spec install(vm(), module()) :: vm()
+  def install(vm, module, args \\ []) do
+    {vm, table} = module.table(vm)
+    target = args[:target] || module.target()
+
+    # direct setting on root of _G is subject to change.
+    # registering it for require is the idea for the future
+    Luex.set_value(vm, [ "luex" | target ], table)
   end
 
   # copy from ava
