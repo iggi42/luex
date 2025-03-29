@@ -9,12 +9,10 @@ defmodule Luex do
   require Luex.LuaError
   require Luex.Records
 
-  # TODO migrate to this, to prevent misremebering in wich order vm and result come
-  # require Record
-  # Record.defrecord(:lua_call, :vm, :result)
-
-  # @type lua_call(result_type):: record(:lua_call, vm: vm(), result: result_type)
-  # expands to: "@type user :: {:user, String.t(), integer}"
+  @typedoc """
+  represents a lua call, that returned a value and potentially changed the vm state
+  """
+  @type lua_call(result_type) :: {result_type, vm()}
 
   @type vm() :: Luex.Records.luerl()
   defguard is_vm(val) when Luex.Records.is_luerl(val)
@@ -24,7 +22,6 @@ defmodule Luex do
 
   For example `package.path`  is a keypath with the elixir representation of `["package", "path"]`.
   """
-  # TODO write tests for non string keypaths
   @type keypath() :: [lua_value()]
 
   @typedoc """
@@ -138,7 +135,7 @@ defmodule Luex do
   # maybe don't deprecate, but rename with emphasis on recursive loading, and only for _input_ into lua, not output (bc rec tables in lua)
   @deprecated "luex will move away from luerl style encoding of values"
   # TODO move the mermaid diagram to somewhere useful ()
-  @spec encode(vm(), encoding_input()) :: {lua_value(), vm()}
+  @spec encode(vm(), encoding_input()) :: lua_call(lua_value())
   defdelegate encode(vm, encode_me), to: Luerl
 
   @type input_value() ::
@@ -155,7 +152,7 @@ defmodule Luex do
 
    not sure if having such a function at all is a good idea
   """
-  @spec load_value(vm(), input_value()) :: {lua_value(), vm()}
+  @spec load_value(vm(), input_value()) :: lua_call(lua_value())
   # literals
   def load_value(vm, nil) when is_vm(vm), do: {nil, vm}
   def load_value(vm, true) when is_vm(vm), do: {true, vm}
@@ -180,13 +177,14 @@ defmodule Luex do
     |> Luerl.set_table1(keypath, value)
   end
 
-  @spec get_value(vm(), keypath()) :: {lua_value(), vm()}
+  @spec get_value(vm(), keypath()) :: lua_call(lua_value())
   def get_value(vm, keypath) when is_vm(vm) and is_list(keypath) do
     Luex.LuaError.wrap do
       get_value1(vm, keypath)
     end
   end
 
+  # offer private get_value version without wrapping to prevent unnecessary multiple wrapping
   defp get_value1(vm, keypath), do: Luerl.get_table1(vm, keypath)
 
   @doc """
@@ -200,14 +198,13 @@ defmodule Luex do
 
   # Example
 
-
     ```elixir
     iex> vm0 = Luex.init()
     iex> {[5], _vm1} = Luex.do_inline(vm0, "return 3+2")
     ```
 
   """
-  @spec do_inline(vm(), String.t()) :: {[lua_value()], vm()}
+  @spec do_inline(vm(), String.t()) :: lua_call([lua_value()])
   def do_inline(vm, program) do
     Luex.LuaError.wrap do
       Luerl.do(vm, program)
@@ -225,7 +222,7 @@ defmodule Luex do
     ```
 
   """
-  @spec do_file(vm(), Path.t()) :: {[lua_value()], vm()}
+  @spec do_file(vm(), Path.t()) :: lua_call([lua_value()])
   def do_file(vm, path) do
     Luex.LuaError.wrap do
       Luerl.dofile(vm, to_charlist(path))
@@ -233,7 +230,7 @@ defmodule Luex do
   end
 
   # TODO write docs
-  @spec do_chunk(vm(), lua_chunk(), [lua_value()]) :: {[lua_value()], vm()}
+  @spec do_chunk(vm(), lua_chunk(), [lua_value()]) :: lua_call([lua_value()])
   def do_chunk(vm, chunk, args \\ []) do
     Luex.LuaError.wrap do
       Luerl.call(vm, chunk, args)
@@ -241,14 +238,14 @@ defmodule Luex do
   end
 
   # TODO write docs
-  @spec load_lib(vm(), module(), Keyword.list()) :: vm()
+  @spec load_lib(vm(), module(), keyword()) :: vm()
   def load_lib(vm, module, args \\ []) do
     {table, vm} = module.table(vm)
     target = args[:target] || module.target()
 
     # direct setting on root of _G is subject to change.
     # registering it for require is the idea for the future
-    Luex.set_value(vm, [ "luex" | target ], table)
+    Luex.set_value(vm, ["luex" | target], table)
   end
 
   # copy from ava

@@ -3,7 +3,7 @@ defmodule Luex.ExtModule do
   # this is module is more an experiment than anything else
   @moduledoc false
   @callback table(Luex.vm()) :: {Luex.Table.t(), Luex.vm()}
-  @callback target() :: Luex.key_path()
+  @callback target() :: Luex.keypath()
 
   # {vm, table} = module.table(vm)
   # target = args[:target] || module.target()

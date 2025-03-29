@@ -22,7 +22,7 @@ defmodule Luex.Table do
   @doc """
   allocate a new table in the virtual machine
   """
-  @spec new(Luex.vm(), %{key() => Luex.lua_value()}) :: {t(), Luex.vm()}
+  @spec new(Luex.vm(), %{key() => Luex.lua_value()}) :: Luex.lua_call(t())
   def new(vm, input) when Luex.is_vm(vm) and is_map(input) do
     :luerl_heap.alloc_table(input, vm)
   end
