@@ -18,7 +18,7 @@ defmodule Luex.MixProject do
         licenses: ["Apache-2.0"],
         maintainers: ["iggi42"],
         files: ["lib", "mix.exs", "README.md", "LICENSE"],
-        links: %{ "GitHub" => @source_url }
+        links: %{"GitHub" => @source_url}
       ]
     ]
   end
