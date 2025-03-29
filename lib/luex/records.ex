@@ -39,8 +39,7 @@ defmodule Luex.Records do
     internal represenation of a lua function, defined in BEAM function via module and function name
     """,
     m: module(),
-    f: atom(),
-    a: non_neg_integer()
+    f: atom()
   )
 
   U.load_luerl_struct(
