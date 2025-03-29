@@ -24,19 +24,29 @@ defmodule LuexTest do
     end
 
     test "set multiple path (check no overwrite)" do
-      vm = Luex.init()
-        |> Luex.set_value( ["a", "b", "c"], "test1")
-        |> Luex.set_value( ["a", "c"], "test2")
+      vm =
+        Luex.init()
+        |> Luex.set_value(["a", "b", "c"], "test1")
+        |> Luex.set_value(["a", "c"], "test2")
 
       assert {["test1", "test2"], _vm} = Luex.do_inline(vm, "return a.b.c, a.c")
+    end
+
+    test "use a table in a keypath" do
+      vm = Luex.init()
+      {table, vm} = Luex.Table.new(vm, %{"key" => 1337})
+      kp = ["a", table, "c"]
+      vm = Luex.set_value(vm, kp, "test2")
+
+      assert {"test2", _vm} = Luex.get_value(vm, kp)
     end
   end
 
   describe "get_value/2" do
     test "happy path: a.b.c = [[Test]]; return a" do
-      vm0 = Luex.init()
-      {_, vm1} = Luex.do_inline(vm0, "a = [[Test]]")
-      assert {"Test", _vm2} = Luex.get_value(vm1, ["a"])
+      vm = Luex.init()
+      {_, vm} = Luex.do_inline(vm, "a = [[Test]]")
+      assert {"Test", _vm2} = Luex.get_value(vm, ["a"])
     end
   end
 
