@@ -2,7 +2,11 @@ defmodule Luex.ExtModule do
   # not ready to be used (yet)
   # this is module is more an experiment than anything else
   @moduledoc false
-  @callback install(Luex.vm()) :: {Luex.Table.t(), Luex.vm()}
+  @callback table(Luex.vm()) :: {Luex.Table.t(), Luex.vm()}
+  @callback target() :: Luex.key_path()
+
+  # {vm, table} = module.table(vm)
+  # target = args[:target] || module.target()
 
   # based on ExUnit.Case, especially register_test & test
   defmacro __using__() do

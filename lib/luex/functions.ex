@@ -5,7 +5,7 @@ defmodule Luex.Functions do
   @opaque t() :: Luex.lua_fun()
 
   # TODO specify tighter
-  @type input() :: (Luex.vm(), [Luex.lua_value()] -> {[Luex.lua_value()], Luex.vm()})
+  @type input() :: ([Luex.lua_value()], Luex.vm()  -> {[Luex.lua_value()], Luex.vm()})
 
   @doc """
   Import an elixir / erlang function into the lua vm to be called by lua code.

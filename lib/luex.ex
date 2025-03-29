@@ -9,6 +9,13 @@ defmodule Luex do
   require Luex.LuaError
   require Luex.Records
 
+  # TODO migrate to this, to prevent misremebering in wich order vm and result come
+  # require Record
+  # Record.defrecord(:lua_call, :vm, :result)
+
+  # @type lua_call(result_type):: record(:lua_call, vm: vm(), result: result_type)
+  # expands to: "@type user :: {:user, String.t(), integer}"
+
   @type vm() :: Luex.Records.luerl()
   defguard is_vm(val) when Luex.Records.is_luerl(val)
 
@@ -17,7 +24,8 @@ defmodule Luex do
 
   For example `package.path`  is a keypath with the elixir representation of `["package", "path"]`.
   """
-  @type keypath() :: [String.t()]
+  # TODO write tests for non string keypaths
+  @type keypath() :: [lua_value()]
 
   @typedoc """
   This type can representation any lua type.
@@ -233,9 +241,9 @@ defmodule Luex do
   end
 
   # TODO write docs
-  @spec load_lib(vm(), module()) :: vm()
+  @spec load_lib(vm(), module(), Keyword.list()) :: vm()
   def load_lib(vm, module, args \\ []) do
-    {vm, table} = module.table(vm)
+    {table, vm} = module.table(vm)
     target = args[:target] || module.target()
 
     # direct setting on root of _G is subject to change.
