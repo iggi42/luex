@@ -143,7 +143,7 @@ defmodule Luex do
           | boolean()
           | number()
           | String.t()
-          | Luex.Table.input()
+          | Luex.Table.data()
           | Luex.Functions.input()
           | {:userdata, any()}
 
@@ -192,6 +192,28 @@ defmodule Luex do
   """
   @spec init() :: vm()
   defdelegate init, to: Luerl
+
+
+  @spec add_epath_loader(vm()) :: vm()
+  def add_epath_loader(vm) do
+    {epath_searcher, vm} = Luex.Function.new(vm, &epath_searcher/2)
+    {searchers, vm} = Luex.get_value(vm, ["package", "searchers"])
+    Luex.Table.append_to_array(vm, searchers, epath_searcher)
+  end
+
+  defp epath_searcher(lua_args, vm) do
+    # TODO find a module implementing ext_module via epath(?) instead
+    {[nil], vm}
+  end
+
+  # like main lua has a cpath to load extensions from via require
+  # we will test who we can get the table via require loaded from a "epath"
+  # epath instead of cpath, you get it right? I am such a well of creativity 
+  @spec set_epath([module()]) :: vm()
+  def set_epath(epath) do
+    epath
+  end
+
 
   @doc """
   run a string as lua code in the given vm.

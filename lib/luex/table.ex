@@ -17,7 +17,7 @@ defmodule Luex.Table do
           | Luex.lua_userdata()
           | Luex.lua_fun()
 
-  @type input() :: %{key() => Luex.lua_value()}
+  @type data() :: %{key() => Luex.lua_value()}
 
   @doc """
   allocate a new table in the virtual machine
@@ -44,17 +44,47 @@ defmodule Luex.Table do
   """
   @spec get_data(Luex.vm(), t()) :: %{key() => Luex.lua_value()}
   def get_data(vm, tref) do
-    :luerl_heap.get_table(tref, vm) |> normalize()
+    builder = fn k, v, acc -> Map.put(acc, k, v) end
+    vm |> deref(tref) |> build(%{}, builder) 
   end
 
+  @spec get_keys(Luex.vm(), t()) :: [ key() ]
+  def get_keys(vm, tref) do
+    builder = fn k, _v, acc -> [k | acc] end
+    vm |> deref(tref) |> build([], builder) 
+  end
+
+  @spec set_key(Luex.vm(), t(), key(), Luex.lua_value()) :: Luex.vm()
+  def set_key(vm, tref, key, val) when Luex.is_vm(vm) and Luex.is_lua_table(tref) and Luex.is_lua_value(key) and Luex.is_lua_value(val) do
+    :luerl_emul.set_table_key(tref, key, val, vm)
+  end
+
+  @spec append_to_array(Luex.vm(), t(), Luex.lua_value()) :: Luex.vm()
+  def append_to_array(vm, root_tref, val) do
+    table = deref(vm, root_tref) 
+    max = fn
+      k, _v, i when i >= k -> i
+      k, _v, i when i < k  -> k
+    end
+    index = build(table, 0, max) + 1
+    set_key(vm, root_tref, index, val)
+  end
+
+  @spec deref(Luex.vm(), Luex.Records.tref()) :: Luex.Records.table()
+  defp deref(vm, tref) do
+    :luerl_heap.get_table(tref, vm) 
+  end
+
+  @typep builder(acc) :: (key(), Luex.lua_value(), acc -> acc)
+
   # normalize from the luerl represenation of a table (array, map, orddict, etc)
-  @spec normalize(Luex.Records.table()) :: %{key() => Luex.lua_value()}
-  defp normalize(table) when Luex.Records.is_table(table) do
+  @spec build(Luex.Records.table(), acc, builder(acc)) :: acc when acc: any()
+  defp build(table, acc, builder) when Luex.Records.is_table(table) and is_function(builder, 3) do
     # heavily inspiried by luerl: src/luerl.erl : 422ff
     arr = Luex.Records.table(table, :a)
     dict = Luex.Records.table(table, :d)
-    fun = fn k, v, acc -> [{k, v} | acc] end
-    ts = :ttdict.fold(fun, [], dict)
-    :array.sparse_foldr(fun, ts, arr) |> Map.new()
+    ts = :ttdict.fold(builder, acc, dict)
+    :array.sparse_foldr(builder, ts, arr)
   end
+
 end

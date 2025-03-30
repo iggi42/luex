@@ -13,6 +13,7 @@ defmodule Luex.Functions do
   Import an elixir / erlang function into the lua vm to be called by lua code.
 
   # Example 
+
   ```elixir
   iex> fun = fn([a], fun_vm) ->
   ...>    {["hello " <> a], fun_vm}

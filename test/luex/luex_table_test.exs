@@ -57,4 +57,11 @@ defmodule LuexTableTest do
     vm = Luex.set_value(vm, ["c"], b_tref)
     assert {[42, "world"], _vm} = Luex.do_inline(vm, "return c.x, c.b.a")
   end
+
+  test "update table" do
+    {io_tref, vm} = Luex.init() |> Luex.get_value(["io"])
+    vm = Luex.Table.set_key(vm, io_tref, "wa", 1337)
+    assert {1337, _vm} = Luex.get_value(vm, ["io", "wa"])
+  end
+
 end
