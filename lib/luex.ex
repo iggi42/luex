@@ -193,17 +193,22 @@ defmodule Luex do
   @spec init() :: vm()
   defdelegate init, to: Luerl
 
-
-  @spec add_epath_loader(vm()) :: vm()
-  def add_epath_loader(vm) do
-    {epath_searcher, vm} = Luex.Function.new(vm, &epath_searcher/2)
+  @spec add_epath_loader(vm(), %{lua_string() => module()}) :: vm()
+  def add_epath_loader(vm, exts) do
+    raw_searcher = build_epath_searcher(exts)
+    {epath_searcher, vm} = Luex.Functions.new(vm, raw_searcher)
     {searchers, vm} = Luex.get_value(vm, ["package", "searchers"])
     Luex.Table.append_to_array(vm, searchers, epath_searcher)
   end
 
-  defp epath_searcher(lua_args, vm) do
-    # TODO find a module implementing ext_module via epath(?) instead
-    {[nil], vm}
+  defp build_epath_searcher(exts) do 
+    whitelist = Enum.map(exts, fn m -> {m.target(), &(m.table(&1))} end) |> Map.new()
+    fn [query], vm ->
+      # TODO find a module implementing ext_module via epath(?) instead
+      ext_module = String.to_atom(query)
+      {table, vm} = ext_module.table(vm)
+      {[table], vm}
+    end
   end
 
   # like main lua has a cpath to load extensions from via require
@@ -213,7 +218,6 @@ defmodule Luex do
   def set_epath(epath) do
     epath
   end
-
 
   @doc """
   run a string as lua code in the given vm.

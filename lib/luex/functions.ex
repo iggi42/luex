@@ -2,7 +2,7 @@ defmodule Luex.Functions do
   require Luex.Records
   require Luex
 
-  @opaque t() :: Luex.lua_fun()
+  @type t() :: Luex.lua_fun()
 
   @typedoc """
   You can import beam functions with this signature

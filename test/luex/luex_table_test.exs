@@ -63,5 +63,4 @@ defmodule LuexTableTest do
     vm = Luex.Table.set_key(vm, io_tref, "wa", 1337)
     assert {1337, _vm} = Luex.get_value(vm, ["io", "wa"])
   end
-
 end
