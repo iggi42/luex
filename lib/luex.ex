@@ -193,22 +193,25 @@ defmodule Luex do
   @spec init() :: vm()
   defdelegate init, to: Luerl
 
-  @spec add_epath_loader(vm(), %{lua_string() => module()}) :: vm()
-  def add_epath_loader(vm, exts) do
-    raw_searcher = build_epath_searcher(exts)
+  @spec setup_luex_ext_searcher(vm(), [module()]) :: vm()
+  def setup_luex_ext_searcher(vm, exts) do
+    whitelist = Enum.map(exts, fn m -> {m.target(), m} end) |> Map.new()
+
+    raw_searcher = fn [query], vm_s when is_lua_string(query) ->
+      case Map.get(whitelist, query, nil) do
+        nil ->
+          {["no luex module registered for: \"#{query}\""], vm_s}
+
+        ext_module when is_atom(ext_module) ->
+          raw_loader = Luex.ExtModule.build_loader(ext_module)
+          {loader, vm} = Luex.Functions.new(vm_s, raw_loader)
+          {[loader], vm}
+      end
+    end
+
     {epath_searcher, vm} = Luex.Functions.new(vm, raw_searcher)
     {searchers, vm} = Luex.get_value(vm, ["package", "searchers"])
     Luex.Table.append_to_array(vm, searchers, epath_searcher)
-  end
-
-  defp build_epath_searcher(exts) do 
-    whitelist = Enum.map(exts, fn m -> {m.target(), &(m.table(&1))} end) |> Map.new()
-    fn [query], vm ->
-      # TODO find a module implementing ext_module via epath(?) instead
-      ext_module = String.to_atom(query)
-      {table, vm} = ext_module.table(vm)
-      {[table], vm}
-    end
   end
 
   # like main lua has a cpath to load extensions from via require

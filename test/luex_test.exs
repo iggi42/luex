@@ -64,4 +64,40 @@ defmodule LuexTest do
       assert Luex.is_vm(vm)
     end
   end
+
+  describe "setup_luex_ext_searcher/2" do
+    defmodule RequireTest do
+      @behaviour Luex.ExtModule
+
+      @impl true
+      def target(), do: "test"
+
+      @impl true
+      def table(vm) do
+        {hello, vm} = Luex.Functions.new(vm, fn [name], vm1 -> {["Hello #{name}"], vm1} end)
+        Luex.Table.new(vm, %{"hello" => hello})
+      end
+    end
+
+    test "basic (happy path)" do
+      vm = Luex.init() |> Luex.setup_luex_ext_searcher([RequireTest])
+
+      assert {["Hello Lua"], _vm} =
+               Luex.do_inline(vm, """
+               local rt = require("test")
+               return rt.hello("Lua")
+               """)
+    end
+
+    test "basic not found" do
+      vm = Luex.init() |> Luex.setup_luex_ext_searcher([])
+
+      # assert {[false, {:no_module, a, b}], _vm}
+      assert_raise Luex.LuaError, ~r/Lua Error: module not found not-real*./, fn ->
+        Luex.do_inline(vm, """
+        return require("not-real")
+        """)
+      end
+    end
+  end
 end

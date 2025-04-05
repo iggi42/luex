@@ -5,6 +5,13 @@ defmodule Luex.ExtModule do
   @callback table(Luex.vm()) :: {Luex.Table.t(), Luex.vm()}
   @callback target() :: Luex.keypath()
 
+  def build_loader(ext_module) do
+    fn _args, vm ->
+      {table, vm} = apply(ext_module, :table, [vm])
+      {[table], vm}
+    end
+  end
+
   # {vm, table} = module.table(vm)
   # target = args[:target] || module.target()
 

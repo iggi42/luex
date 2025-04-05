@@ -4,7 +4,15 @@ defmodule Luex.LuaError do
   @impl Exception
   def message(%{reason: r, vm: _vm}) do
     # TODO implement a prober error message
-    "Lua Error: #{inspect(__MODULE__)}.message/1 #{inspect(r)}"
+    "Lua Error: #{format_error(r)}"
+  end
+
+  def format_error({:no_module, m, estr}) do
+    "module not found #{to_string(m)}, #{to_string(estr)}"
+  end
+
+  def format_error(reason) do
+    :luerl_lib.format_error(reason)
   end
 
   @doc """
