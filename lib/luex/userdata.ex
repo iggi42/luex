@@ -16,8 +16,12 @@ defmodule Luex.Userdata do
 
   @spec get_data(Luex.vm(), t()) :: {payload :: any(), Luex.vm()}
   def get_data(vm, uref) when Luex.is_vm(vm) do
-    case :luerl_heap.get_userdata(uref, vm) do
-      {v, vm1} when Luex.Records.is_userdata(v) -> {Luex.Records.userdata(v, :d), vm1}
-    end
+    {val, vm} = :luerl_heap.get_userdata(uref, vm)
+    {Luex.Records.userdata(val, :d), vm}
+  end
+
+  @spec set_data(Luex.vm(), t(), payload :: any()) :: Luex.vm()
+  def set_data(vm, uref, payload) do
+    :luerl_heap.set_userdata_data(uref, payload, vm)
   end
 end
