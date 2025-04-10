@@ -4,6 +4,7 @@ defmodule Luex.Table.Array do
 
   Lua arrays are tables with their keys being the integer index of a stored value
   """
+  alias Luex.Table
   require Luex
 
   @doc """
@@ -28,20 +29,6 @@ defmodule Luex.Table.Array do
   def lua_array?(vm, ref) do
     # TODO is_array implmentation
     vm |> Luex.Table.get_keys(ref) |> Enum.all?(&Luex.is_lua_number/1)
-  end
-
-  @doc """
-  folds the array from the lowest to the hightest index
-  """
-  def foldl(vm, ref, acc, folder) do
-    #   Luex.Table.get(vm, ref,
-  end
-
-  @doc """
-  folds the array from the highest to the lowest index
-  """
-  def foldr(vm, ref, acc, folder) do
-    #   Luex.Table.get(vm, ref,
   end
 
   @spec to_list(Luex.vm(), Luex.lua_table()) :: [Luex.lua_value()]
@@ -73,15 +60,30 @@ defmodule Luex.Table.Array do
     # get the highest root
     max =
       Luex.Table.fold(vm, root_tref, 0, fn
-        k, _, i when Luex.is_lua_number(k) and i >= k -> i
-        k, _, i when Luex.is_lua_number(k) and i < k -> k
+        k, _, i when Luex.is_lua_number(k) and i >= k ->
+          i
+
+        k, _, i when Luex.is_lua_number(k) and i < k ->
+          k
+
         # TODO do an actuall lua error instead
-        k, _, _ -> raise Luex.Table.NotAnArrayException, [
-          wrong_key: k,
-          table: root_tref
-         ]
+        k, _, _ ->
+          raise Luex.Table.NotAnArrayException,
+            wrong_key: k,
+            table: root_tref
       end)
 
     Luex.Table.set_key(vm, root_tref, max + 1, val)
   end
+
+  # TODO analyze performance on this
+  @doc """
+  folds the array from the lowest to the hightest index
+  """
+  def foldl(vm, ref, acc, folder), do: _foldl(vm, ref, acc, 0, folder)
+
+  defp _foldl(vm, ref, acc, i, folder) do
+
+  end
+
 end

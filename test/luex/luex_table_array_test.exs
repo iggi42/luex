@@ -15,11 +15,12 @@ defmodule LuexTableArrayTest do
         |> Luex.do_inline("""
         return { a = 123; b = 567; };
         """)
+
       match_msg = ~r/lua table is not a well formed array, because of key .* #{inspect(no_array)}/
 
-        assert_raise Table.NotAnArrayException, match_msg, fn ->
-          Array.append(vm, no_array, "value")
-        end
+      assert_raise Table.NotAnArrayException, match_msg, fn ->
+        Array.append(vm, no_array, "value")
+      end
     end
   end
 end
