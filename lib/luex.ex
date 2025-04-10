@@ -211,7 +211,7 @@ defmodule Luex do
 
     {epath_searcher, vm} = Luex.Functions.new(vm, raw_searcher)
     {searchers, vm} = Luex.get_value(vm, ["package", "searchers"])
-    Luex.Table.append_to_array(vm, searchers, epath_searcher)
+    Luex.Table.Array.append(vm, searchers, epath_searcher)
   end
 
   # like main lua has a cpath to load extensions from via require
