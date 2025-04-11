@@ -18,25 +18,6 @@ defmodule Luex do
   defguard is_vm(val) when Luex.Records.is_luerl(val)
 
   @typedoc """
-  A keypath describes a list of keys, to navigate nested tables.
-
-  For example `package.path`  is a keypath with the elixir representation of `["package", "path"]`.
-  """
-  @type keypath() :: [lua_value()]
-
-  @typedoc """
-  This type can representation any lua type.
-  """
-  @type lua_value() ::
-          lua_nil()
-          | lua_bool()
-          | lua_string()
-          | lua_number()
-          | lua_table()
-          | lua_userdata()
-          | lua_fun()
-
-  @typedoc """
   literal type representation of the lua `nil` value via atom `:nil`
   """
   @type lua_nil() :: nil
@@ -64,7 +45,7 @@ defmodule Luex do
   references a table in a lua virtual machine.
   See `Luex.Table` for more information on how to handle this value.
   """
-  @type lua_table() :: Luex.Table.t()
+  @type lua_table() :: Luex.Records.tref()
   defguard is_lua_table(v) when Luex.Records.is_tref(v)
 
   @typedoc """
@@ -83,8 +64,22 @@ defmodule Luex do
            when Luex.Records.is_erl_mfa(v) or Luex.Records.is_erl_func(v) or
                   Luex.Records.is_lua_func(v)
 
+  # TODO write docs
   @type lua_chunk() :: Luex.Records.erl_func() | Luex.Records.funref()
   defguard is_lua_chunk(v) when Luex.Records.is_erl_func(v) or Luex.Records.is_funref(v)
+
+
+  @typedoc """
+  This type can representation any lua type.
+  """
+  @type lua_value() ::
+          lua_nil()
+          | lua_bool()
+          | lua_string()
+          | lua_number()
+          | lua_table()
+          | lua_userdata()
+          | lua_fun()
 
   @doc """
   `is_lua_value` checks looks like any representation of a value in a lua vm
@@ -93,6 +88,14 @@ defmodule Luex do
            when is_lua_nil(value) or is_lua_bool(value) or is_lua_fun(value) or
                   is_lua_string(value) or is_lua_number(value) or is_lua_table(value) or
                   is_lua_userdata(value) or is_lua_fun(value) or is_lua_chunk(value)
+
+  @typedoc """
+  A keypath describes a list of keys, to navigate nested tables.
+
+  For example `package.path`  is a keypath with the elixir representation of `["package", "path"]`.
+  """
+  @type keypath() :: [lua_value()]
+
 
   @typedoc """
   input type for encode/2
@@ -133,7 +136,7 @@ defmodule Luex do
     Tuples are only allowed as keyword lists items and to indicate userdata.
   """
   # maybe don't deprecate, but rename with emphasis on recursive loading, and only for _input_ into lua, not output (bc rec tables in lua)
-  @deprecated "luex will move away from luerl style encoding of values"
+  # @deprecated "luex will move away from luerl style encoding of values"
   # TODO move the mermaid diagram to somewhere useful ()
   @spec encode(vm(), encoding_input()) :: lua_call(lua_value())
   defdelegate encode(vm, encode_me), to: Luerl
@@ -264,17 +267,6 @@ defmodule Luex do
     Luex.LuaError.wrap do
       Luerl.call(vm, chunk, args)
     end
-  end
-
-  # TODO write docs
-  @spec load_lib(vm(), module(), keyword()) :: vm()
-  def load_lib(vm, module, args \\ []) do
-    {table, vm} = module.table(vm)
-    target = args[:target] || module.target()
-
-    # direct setting on root of _G is subject to change.
-    # registering it for require is the idea for the future
-    Luex.set_value(vm, ["luex" | target], table)
   end
 
   # copy from ava
