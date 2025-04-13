@@ -29,10 +29,9 @@ defmodule LuexTableArrayTest do
   end
 
   describe "new/2" do
-
     test "create simple new array (happy path)" do
       {array, vm} = Luex.init() |> Luex.Table.Array.new(["a", "b", "c"])
-      assert %{ 1 => "a", 2 => "b", 3 => "c"} == Luex.Table.get_data(vm, array)
+      assert %{1 => "a", 2 => "b", 3 => "c"} == Luex.Table.get_data(vm, array)
     end
   end
 end

@@ -80,7 +80,7 @@ defmodule LuexTest do
     end
 
     test "basic (happy path)" do
-      vm = Luex.init() |> Luex.setup_luex_ext_searcher([RequireTest])
+      vm = Luex.init() |> Luex.configure(ext_searcher: [RequireTest])
 
       assert {["Hello Lua"], _vm} =
                Luex.do_inline(vm, """
@@ -90,8 +90,7 @@ defmodule LuexTest do
     end
 
     test "basic not found" do
-      vm = Luex.init() |> Luex.setup_luex_ext_searcher([])
-
+      vm = Luex.init() |> Luex.configure(ext_searcher: [RequireTest])
       # assert {[false, {:no_module, a, b}], _vm}
       assert_raise Luex.LuaError, ~r/Lua Error: module not found not-real*./, fn ->
         Luex.do_inline(vm, """

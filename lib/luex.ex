@@ -68,7 +68,6 @@ defmodule Luex do
   @type lua_chunk() :: Luex.Records.erl_func() | Luex.Records.funref()
   defguard is_lua_chunk(v) when Luex.Records.is_erl_func(v) or Luex.Records.is_funref(v)
 
-
   @typedoc """
   This type can representation any lua type.
   """
@@ -95,7 +94,6 @@ defmodule Luex do
   For example `package.path`  is a keypath with the elixir representation of `["package", "path"]`.
   """
   @type keypath() :: [lua_value()]
-
 
   @typedoc """
   input type for encode/2
@@ -196,9 +194,17 @@ defmodule Luex do
   @spec init() :: vm()
   defdelegate init, to: Luerl
 
-  @spec setup_luex_ext_searcher(vm(), [module()]) :: vm()
-  def setup_luex_ext_searcher(vm, exts) do
-    whitelist = Enum.map(exts, fn m -> {m.target(), m} end) |> Map.new()
+  @typedoc """
+  options 
+   - `:ext_searcher`: list of modules that implement Luex.ExtModule, used to extend the lua require function.
+  """
+  @type vm_config() :: {:lua_ext_searcher, [module()]}
+
+  @spec configure(vm(), [vm_config()]) :: vm()
+  def configure(vm, []), do: vm
+
+  def configure(vm, [{:ext_searcher, mods} | args]) do
+    whitelist = Enum.map(mods, fn m -> {m.target(), m} end) |> Map.new()
 
     raw_searcher = fn [query], vm_s when is_lua_string(query) ->
       case Map.get(whitelist, query, nil) do
@@ -214,7 +220,10 @@ defmodule Luex do
 
     {epath_searcher, vm} = Luex.Functions.new(vm, raw_searcher)
     {searchers, vm} = Luex.get_value(vm, ["package", "searchers"])
-    Luex.Table.Array.append(vm, searchers, epath_searcher)
+
+    vm
+    |> Luex.Table.Array.append(searchers, epath_searcher)
+    |> configure(args)
   end
 
   # like main lua has a cpath to load extensions from via require

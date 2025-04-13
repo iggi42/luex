@@ -31,7 +31,6 @@ defmodule Luex.Table.Array do
     vm |> Luex.Table.get_keys(ref) |> Enum.all?(&Luex.is_lua_number/1)
   end
 
-
   @doc """
   build a elixir list from a lua array
 
@@ -50,14 +49,15 @@ defmodule Luex.Table.Array do
     fold(vm, ref, [], fn _i, val, acc -> [val | acc] end) |> Enum.reverse()
   end
 
-
   @doc "build a lua array from elixir list"
   @spec new(Luex.vm(), [Luex.lua_value()]) :: {Luex.lua_table(), Luex.vm()}
-  def new(vm, input) when is_list(input) do 
+  def new(vm, input) when is_list(input) do
     acc = {1, %{}}
+
     folder = fn el, {i, acc} ->
-      {i+1, Map.put(acc, i, el)}
+      {i + 1, Map.put(acc, i, el)}
     end
+
     {_max, data} = List.foldl(input, acc, folder)
     Luex.Table.new(vm, data)
   end
@@ -99,7 +99,7 @@ defmodule Luex.Table.Array do
     Luex.Table.set_key(vm, root_tref, max + 1, val)
   end
 
-  @type folder(acc) :: (index :: Luex.lua_number(), element :: Luex.lua_value(),  acc -> acc)
+  @type folder(acc) :: (index :: Luex.lua_number(), element :: Luex.lua_value(), acc -> acc)
 
   # TODO analyze performance on this
   @doc """
@@ -121,12 +121,14 @@ defmodule Luex.Table.Array do
   defp fold1(vm, ref, acc, i, folder) do
     # i is our key here
     # TODO test if metamethods work here
-    case Table.get_key(vm, ref, i) do # potential endless loop
-      {nil, _vm} -> acc
-      {val, vm}  ->
+    # potential endless loop
+    case Table.get_key(vm, ref, i) do
+      {nil, _vm} ->
+        acc
+
+      {val, vm} ->
         acc = folder.(i, val, acc)
-        fold1(vm, ref, acc, i+1, folder)
+        fold1(vm, ref, acc, i + 1, folder)
     end
   end
-
 end
