@@ -108,6 +108,9 @@ defmodule Luex do
           | {:userdata, any()}
 
   @doc """
+  Import an elixir value into a luerl vm.
+  This is function recursively loads lists, keyword lists and maps.
+
     This is how elixir values are encoded into lua values, by luerl.
     ```mermaid
     graph LR;
@@ -151,7 +154,6 @@ defmodule Luex do
   @doc """
     an attempt at doing Luerl.encode/2 better.
 
-   not sure if having such a function at all is a good idea
   """
   @spec load_value(vm(), input_value()) :: lua_call(lua_value())
   # literals
@@ -213,8 +215,8 @@ defmodule Luex do
 
         ext_module when is_atom(ext_module) ->
           raw_loader = Luex.ExtModule.build_loader(ext_module)
-          {loader, vm} = Luex.Functions.new(vm_s, raw_loader)
-          {[loader], vm}
+          {loader, vm_s} = Luex.Functions.new(vm_s, raw_loader)
+          {[loader], vm_s}
       end
     end
 

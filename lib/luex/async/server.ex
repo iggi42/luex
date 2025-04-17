@@ -1,11 +1,26 @@
 defmodule Luex.Async.Server do
   use GenServer
 
-  def init(args) do
-    vm = Luex.init(args)
-    {:ok, {:state, vm, []}}
+  defmodule __MODULE__.State do
+    defstruct [:vm]
   end
 
-  def handle_call({:do_inline}, from, state) do
+  alias __MODULE__.State, as: S
+
+  # configure 
+  def init(args) do
+    do_conf = args[:setup] || (& &1)
+
+    Luex.init()
+    |> then(do_conf)
+    |> then(&{:ok, %S{vm: &1}})
   end
+
+  def handle_call({:do_inline, inline_lua}, _from, state) do
+    {results, vm} = Luex.do_inline(state.vm, inline_lua)
+    response = {:ok, results}
+    state = %S{ state | vm: vm }
+    {:reply, response, state}
+  end
+
 end

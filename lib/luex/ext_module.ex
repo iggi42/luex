@@ -2,8 +2,8 @@ defmodule Luex.ExtModule do
   # not ready to be used (yet)
   # this is module is more an experiment than anything else
   @moduledoc false
-  @callback table(Luex.vm()) :: {Luex.Table.t(), Luex.vm()}
-  @callback target() :: Luex.keypath()
+  @callback table(Luex.vm()) :: {Luex.lua_table(), Luex.vm()}
+  @callback target() :: binary()
 
   def build_loader(ext_module) do
     fn _args, vm ->
@@ -43,4 +43,5 @@ defmodule Luex.ExtModule do
       end
     end
   end
+
 end

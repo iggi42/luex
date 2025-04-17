@@ -65,7 +65,7 @@ defmodule LuexTest do
     end
   end
 
-  describe "setup_luex_ext_searcher/2" do
+  describe "configure/2 for require" do
     defmodule RequireTest do
       @behaviour Luex.ExtModule
 

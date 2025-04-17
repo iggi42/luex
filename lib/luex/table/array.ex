@@ -1,6 +1,6 @@
 defmodule Luex.Table.Array do
   @moduledoc """
-  access Lua arrays
+  access Lua arrays (heavy wip state)
 
   Lua arrays are tables with their keys being the integer index of a stored value
   """
