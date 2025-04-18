@@ -73,7 +73,7 @@ defmodule LuexTest do
       def target(), do: "test"
 
       @impl true
-      def table(vm) do
+      def loader(vm) do
         {hello, vm} = Luex.Functions.new(vm, fn [name], vm1 -> {["Hello #{name}"], vm1} end)
         Luex.Table.new(vm, %{"hello" => hello})
       end

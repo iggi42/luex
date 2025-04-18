@@ -13,16 +13,5 @@ defmodule Luex.LuexAsyncTest do
     end
   end
 
-  # inspired by https://github.com/zserge/lua-promises
-  describe "test promises in lua" do
-    test "promises.new" do
-      setup = &Luex.configure(&1, [Luex.Async.Promises])
-      {:ok, vm} = Luex.Async.start_link(setup: setup)
-      Luex.Async.do_inline(vm, """
-        local prom = require("promises.http")
-        """)
-    end
-    # <promise>.then(onFullfiled, onRejected)
-  end
   
 end

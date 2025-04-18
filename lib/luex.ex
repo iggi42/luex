@@ -209,8 +209,8 @@ defmodule Luex do
     whitelist = Enum.map(mods, fn m -> {m.target(), m} end) |> Map.new()
 
     raw_searcher = fn [query], vm_s when is_lua_string(query) ->
-      case Map.get(whitelist, query, nil) do
-        nil ->
+      case Map.get(whitelist, query, :not_found) do
+        :not_found ->
           {["no luex module registered for: \"#{query}\""], vm_s}
 
         ext_module when is_atom(ext_module) ->
