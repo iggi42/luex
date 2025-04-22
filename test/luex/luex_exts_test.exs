@@ -7,7 +7,8 @@ require Luex
     defmodule Happy do
       use Luex.ExtModule
 
-      lua_ext "test" do
+
+      lua_ext "test", vm do
          a when Luex.is_lua_string(a) -> :ok
       end
 

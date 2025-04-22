@@ -5,9 +5,10 @@ defmodule Luex.ExtModule do
   @callback loader(lua_args :: [Luex.lua_value()], Luex.vm()) :: Luex.lua_call([Luex.lua_table()])
   @callback target() :: Luex.lua_string()
 
-  @spec build_loader([module()]) :: Luex.Functions.input()
+  @spec build_loader(module()) :: Luex.Functions.input()
   def build_loader(ext_module) do
     fn args, vm ->
+      dbg(args)
       {table, vm} = apply(ext_module, :loader, [vm, args])
       {[table], vm}
     end
@@ -17,12 +18,13 @@ defmodule Luex.ExtModule do
   # target = args[:target] || module.target()
 
   # based on ExUnit.Case, especially register_test & test
-  defmacro __using__() do
+  defmacro __using__(_opts) do
     Module.register_attribute(__CALLER__.module, :luex_ext, accumulate: true)
 
     quote do
       @behaviour unquote(__MODULE__)
       # TODO in late hook build generate loader/1 with data from :luex_ext attribute
+      import unquote(__MODULE__), only: [lua_ext: 3]
     end
   end
 
@@ -40,12 +42,13 @@ defmodule Luex.ExtModule do
   """
   defmacro lua_ext(key, vm_name, do: exec) do
     local = register_extension(__CALLER__.module, key)
-    user_clauses = Enum.map(exec, fn {:'->', } -> :ok end)
+
+    user_clauses = Enum.map(exec, fn {:'->', _} -> :ok end)
 
     # TODO compelete this 
     quote do
-      @spec unquote(local)
-      @luext_ext
+      # @spec unquote(local)
+      # @luext_ext
       unquote(user_clauses)
       def unquote(local)(args, unquote(vm_name)) do
         fuck
