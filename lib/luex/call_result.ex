@@ -1,4 +1,4 @@
-defmodule Luex.Call do
+defmodule Luex.CallResult do
   @moduledoc false
   # IDEA STAGE: replace the lua(call) type
   # implement enumerable against this

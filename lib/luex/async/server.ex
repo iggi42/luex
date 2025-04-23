@@ -5,6 +5,7 @@ defmodule Luex.Async.Server do
     defstruct [:vm]
   end
 
+  alias Luex.CallResult
   alias __MODULE__.State, as: S
 
   # configure 
@@ -17,7 +18,7 @@ defmodule Luex.Async.Server do
   end
 
   def handle_call({:do_inline, inline_lua}, _from, state) do
-    {results, vm} = Luex.do_inline(state.vm, inline_lua)
+    %CallResult{return: results, vm: vm} = Luex.do_inline(state.vm, inline_lua)
     response = {:ok, results}
     state = %S{ state | vm: vm }
     {:reply, response, state}

@@ -9,12 +9,12 @@ defmodule Luex do
   require Luex.LuaError
   require Luex.Records
 
-  alias Luex.Call
+  alias Luex.CallResult
 
   @typedoc """
   represents a lua call, that returned a value and potentially changed the vm state
   """
-  @type lua_call(result_type) :: %Luex.Call{vm: Luex.vm(), return: result_type} #  {result_type, vm()}
+  @type lua_call(result_type) :: %Luex.CallResult{vm: Luex.vm(), return: result_type} #  {result_type, vm()}
 
   @type vm() :: Luex.Records.luerl()
   defguard is_vm(val) when Luex.Records.is_luerl(val)
@@ -145,7 +145,7 @@ defmodule Luex do
   def encode(vm, encoding_input) do
     vm
     |> Luerl.encode(encoding_input)
-    |> Call.from_luerl()
+    |> CallResult.from_luerl()
   end
 
   @type input_value() ::
@@ -163,11 +163,11 @@ defmodule Luex do
   """
   @spec load_value(vm(), input_value()) :: lua_call(lua_value())
   # literals
-  def load_value(vm, nil) when is_vm(vm), do: %Call{return: nil, vm: vm}
-  def load_value(vm, true) when is_vm(vm), do: %Call{return: true, vm: vm}
-  def load_value(vm, false) when is_vm(vm), do: %Call{return: false, vm: vm}
-  def load_value(vm, n) when is_vm(vm) and is_number(n), do: %Call{return: n, vm: vm}
-  def load_value(vm, s) when is_vm(vm) and is_binary(s), do: %Call{return: s, vm: vm}
+  def load_value(vm, nil) when is_vm(vm), do: %CallResult{return: nil, vm: vm}
+  def load_value(vm, true) when is_vm(vm), do: %CallResult{return: true, vm: vm}
+  def load_value(vm, false) when is_vm(vm), do: %CallResult{return: false, vm: vm}
+  def load_value(vm, n) when is_vm(vm) and is_number(n), do: %CallResult{return: n, vm: vm}
+  def load_value(vm, s) when is_vm(vm) and is_binary(s), do: %CallResult{return: s, vm: vm}
   # referenced values
   def load_value(vm, m) when is_vm(vm) and is_map(m), do: Luex.Table.new(vm, m)
   def load_value(vm, {:userdata, payload}) when is_vm(vm), do: Luex.Userdata.new(vm, payload)
@@ -189,7 +189,7 @@ defmodule Luex do
   @spec get_value(vm(), keypath()) :: lua_call(lua_value())
   def get_value(vm, keypath) when is_vm(vm) and is_list(keypath) do
     Luex.LuaError.wrap do
-      get_value1(vm, keypath) |> Call.from_luerl()
+      get_value1(vm, keypath) |> CallResult.from_luerl()
     end
   end
 
@@ -217,18 +217,17 @@ defmodule Luex do
     raw_searcher = fn [query], vm_s when is_lua_string(query) ->
       case Map.get(whitelist, query, :not_found) do
         :not_found ->
-          %Call{ return: ["no luex module registered for: \"#{query}\""], vm: vm_s}
+          {["no luex module registered for: \"#{query}\""], vm_s}
 
         ext_module when is_atom(ext_module) ->
           raw_loader = Luex.ExtModule.build_loader(ext_module)
-          vm_s
-          |> Luex.Functions.new(raw_loader)
-          |> then(&%Call{ &1 | return: [ &1.return ]})
+          %CallResult{return: f, vm: vm_s} = Luex.Functions.new(vm_s, raw_loader)
+          {[f], vm_s}
       end
     end
 
-    %Call{return: searchers, vm: vm} = Luex.get_value(vm, ["package", "searchers"])
-    %Call{return: epath_searcher, vm: vm} = Luex.Functions.new(vm, raw_searcher)
+    %CallResult{return: searchers, vm: vm} = Luex.get_value(vm, ["package", "searchers"])
+    %CallResult{return: epath_searcher, vm: vm} = Luex.Functions.new(vm, raw_searcher)
 
     vm
     |> Luex.Table.Array.append(searchers, epath_searcher)
@@ -241,7 +240,7 @@ defmodule Luex do
   @spec do_inline(vm(), String.t()) :: lua_call([lua_value()])
   def do_inline(vm, program) do
     Luex.LuaError.wrap do
-      Luerl.do(vm, program) |> Call.from_luerl()
+      Luerl.do(vm, program) |> CallResult.from_luerl()
     end
   end
 
@@ -252,14 +251,14 @@ defmodule Luex do
 
     ```elixir
     iex> vm0 = Luex.init()
-    iex> %Luex.Call{return: [5]} = Luex.do_file(vm0, "./test/return_5.lua")
+    iex> %Luex.CallResult{return: [5]} = Luex.do_file(vm0, "./test/return_5.lua")
     ```
 
   """
   @spec do_file(vm(), Path.t()) :: lua_call([lua_value()])
   def do_file(vm, path) do
     Luex.LuaError.wrap do
-      Luerl.dofile(vm, to_charlist(path)) |> Call.from_luerl()
+      Luerl.dofile(vm, to_charlist(path)) |> CallResult.from_luerl()
     end
   end
 
@@ -267,7 +266,7 @@ defmodule Luex do
   @spec do_chunk(vm(), lua_chunk(), [lua_value()]) :: lua_call([lua_value()])
   def do_chunk(vm, chunk, args \\ []) do
     Luex.LuaError.wrap do
-      Luerl.call(vm, chunk, args)  |> Call.from_luerl()
+      Luerl.call(vm, chunk, args)  |> CallResult.from_luerl()
     end
   end
 

@@ -1,7 +1,7 @@
 defmodule LuexTest do
   require Luex
   use ExUnit.Case
-  alias Luex.Call, as: LCall
+  alias Luex.CallResult, as: LCall
   doctest Luex
 
   describe "init/0" do
@@ -53,7 +53,7 @@ defmodule LuexTest do
   describe "do_inline/2" do
 
     test "just some math and return" do 
-       assert %Luex.Call{return: [5]}  == Luex.init() |> Luex.do_inline("return 3+2")
+       assert %LCall{return: [5]}  = Luex.init() |> Luex.do_inline("return 3+2")
     end
 
     test "run some multiline code and return" do
@@ -78,8 +78,8 @@ defmodule LuexTest do
       def target(), do: "test"
 
       @impl true
-      def loader(vm) do
-        {hello, vm} = Luex.Functions.new(vm, fn [name], vm1 -> %LCall{return: ["Hello #{name}"], vm: vm1} end)
+      def loader(vm, _args) do
+        %LCall{return: hello, vm: vm} = Luex.Functions.new(vm, fn [name], vm1 -> {["Hello #{name}"], vm1} end)
         Luex.Table.new(vm, %{"hello" => hello})
       end
     end

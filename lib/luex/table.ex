@@ -4,7 +4,7 @@ defmodule Luex.Table do
   require Luex
   require Luex.Records
 
-  alias Luex.Call
+  alias Luex.CallResult, as: Call
 
   @typedoc """
   Every lua type, execpt for `nil` can be used as key in a table.
@@ -49,12 +49,12 @@ defmodule Luex.Table do
 
   # Example
   ```elixir
-  iex> %Luex.Call{vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
+  iex> %Luex.CallResult{vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
   ...>   a = {}
   ...>   a.x = 42
   ...>   a.hello = "world"
   ...> \"\"\")
-  iex> %Luex.Call{return: a_tref, vm: vm} = Luex.get_value(vm, ["a"])
+  iex> %Luex.CallResult{return: a_tref, vm: vm} = Luex.get_value(vm, ["a"])
   iex> Luex.Table.get_data(vm, a_tref)
   %{"x" => 42, "hello" => "world"}
   ```

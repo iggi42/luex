@@ -4,14 +4,14 @@ defmodule LuexTableArrayTest do
   alias Luex.Table.Array
   doctest Array
   require Luex
-  alias Luex.Call, as: LCall
+  alias Luex.CallResult, as: LCall
 
   describe "append/3" do
     # TODO add test against malformed array
     # reminder: happy path test is module doc
 
     test "append to non array" do
-      {[no_array], vm} =
+      %Luex.CallResult{return: [no_array], vm: vm} =
         Luex.init()
         |> Luex.do_inline("""
         return { a = 123; b = 567; };

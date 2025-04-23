@@ -2,13 +2,16 @@ defmodule Luex.ExtModule do
   # not ready to be used (yet)
   # this is module is more an experiment than anything else
   @moduledoc false
+
+  alias Luex.CallResult, as: Call
+
   @callback loader(lua_args :: [Luex.lua_value()], Luex.vm()) :: Luex.lua_call([Luex.lua_table()])
   @callback target() :: Luex.lua_string()
 
   @spec build_loader(module()) :: Luex.Functions.input()
   def build_loader(ext_module) do
     fn args, vm ->
-      %Luex.Call{return: table, vm: vm} = apply(ext_module, :loader, [vm, args])
+      %Call{return: table, vm: vm} = apply(ext_module, :loader, [vm, args])
       {[table], vm}
     end
   end

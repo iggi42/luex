@@ -2,7 +2,7 @@ defmodule Luex.Functions do
   require Luex.Records
   require Luex
 
-  alias Luex.Call
+  alias Luex.CallResult, as: Call
 
   @type t() :: Luex.lua_fun()
 
@@ -20,9 +20,9 @@ defmodule Luex.Functions do
   iex> fun = fn([a], fun_vm) ->
   ...>    {["hello " <> a], fun_vm}
   ...> end
-  iex> {luerl_fun, vm} = Luex.init() |> Luex.Functions.new(fun)
+  iex> %Luex.CallResult{return: luerl_fun, vm: vm} = Luex.init() |> Luex.Functions.new(fun)
   iex> vm = Luex.set_value(vm, ["a", "b"], luerl_fun)
-  iex> {result, _vm} = Luex.do_inline(vm, \"\"\"
+  iex> %Luex.CallResult{return: result, vm: vm} = Luex.do_inline(vm, \"\"\"
   ...>   return a.b("Demo")
   ...> \"\"\")
   iex> result

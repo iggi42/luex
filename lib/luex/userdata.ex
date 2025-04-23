@@ -4,7 +4,7 @@ defmodule Luex.Userdata do
   require Luex
   require Luex.Records
 
-  alias Luex.Call, as: LCall
+  alias Luex.CallResult, as: LCall
 
   @type t() :: Luex.Records.usdref()
 

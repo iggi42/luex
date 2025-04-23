@@ -3,7 +3,7 @@ defmodule LuexTableTest do
 
   doctest Luex.Table
 
-  alias Luex.Call, as: LCall
+  alias Luex.CallResult, as: LCall
   require Luex
 
   test "create and read a simple map" do

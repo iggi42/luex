@@ -7,19 +7,17 @@ defmodule Luex.Table.Array do
   alias Luex.Table
   require Luex
 
-  alias Luex.Call, as: LCall
-
   @doc """
   check if a table is a well formed lua array.
 
   # Example
   ```elixir
-  iex> {[array], vm} = Luex.init() |> Luex.do_inline(\"\"\"
+  iex> %Luex.CallResult{return: [array], vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
   ...>   return {"a", "b", "c"};
   ...> \"\"\")
   iex> Luex.Table.Array.lua_array?(vm, array)
   true
-  iex> {[no_array], vm} = Luex.init() |> Luex.do_inline(\"\"\"
+  iex> %Luex.CallResult{return: [no_array], vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
   ...>   return { a = 123; b = 567; };
   ...> \"\"\")
   iex> Luex.Table.Array.lua_array?(vm, no_array)
@@ -38,7 +36,7 @@ defmodule Luex.Table.Array do
 
   # Example
   ```elixir
-  iex> %Luex.Call{return: [array], vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
+  iex> %Luex.CallResult{return: [array], vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
   ...>   return {"a", "b", "c"};
   ...> \"\"\")
   iex> Luex.Table.Array.to_list(vm, array)
@@ -69,10 +67,10 @@ defmodule Luex.Table.Array do
 
   # Example
   ```elixir
-  iex> %Luex.Call{vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
+  iex> %Luex.CallResult{vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
   ...>   numbers = {"eins", "zwei"}
   ...> \"\"\")
-  iex> {numbers, vm} = Luex.get_value(vm, ["numbers"])
+  iex> %Luex.CallResult{return: numbers, vm: vm} = Luex.get_value(vm, ["numbers"])
   iex> vm = Luex.Table.Array.append(vm, numbers, "drei")
   iex> Luex.Table.get_data(vm, numbers)
   %{1 => "eins", 2 => "zwei", 3 => "drei"}
@@ -109,7 +107,7 @@ defmodule Luex.Table.Array do
 
   # Example
   ```elixir
-  iex> {[numbers], vm} = Luex.init() |> Luex.do_inline(\"\"\"
+  iex> %Luex.CallResult{return: [numbers], vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
   ...>   numbers = {"eins", "zwei", "drei"}
   ...>   return numbers
   ...> \"\"\")
@@ -125,10 +123,9 @@ defmodule Luex.Table.Array do
     # TODO test if metamethods work here
     # potential endless loop
     case Table.get_key(vm, ref, i) do
-      {nil, _vm} ->
-        acc
+      %Luex.CallResult{ return: nil } -> acc
 
-      {val, vm} ->
+      %Luex.CallResult{ return: val, vm: vm} ->
         acc = folder.(i, val, acc)
         fold1(vm, ref, acc, i + 1, folder)
     end

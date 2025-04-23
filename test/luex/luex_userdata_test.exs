@@ -3,7 +3,7 @@ defmodule LuexUserdataTest do
 
   require Luex
 
-  alias Luex.Call, as: LCall
+  alias Luex.CallResult, as: LCall
 
   test "create and retrieve a simple userdata" do
     vm = Luex.init()
