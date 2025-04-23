@@ -22,7 +22,7 @@ defmodule Luex.Table do
   @type folder(acc) :: (key(), Luex.lua_value(), acc -> acc)
 
   @doc """
-  fold over each key value pair of a referenced
+  fold over each key value pair of a referenced table
   """
   # normalize from the luerl represenation of a table (array, map, orddict, etc)
   @spec fold(Luex.vm(), Luex.lua_table(), acc, folder(acc)) :: acc when acc: any()
