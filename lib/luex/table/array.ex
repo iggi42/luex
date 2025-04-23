@@ -7,6 +7,8 @@ defmodule Luex.Table.Array do
   alias Luex.Table
   require Luex
 
+  alias Luex.Call, as: LCall
+
   @doc """
   check if a table is a well formed lua array.
 
@@ -36,7 +38,7 @@ defmodule Luex.Table.Array do
 
   # Example
   ```elixir
-  iex> {[array], vm} = Luex.init() |> Luex.do_inline(\"\"\"
+  iex> %Luex.Call{return: [array], vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
   ...>   return {"a", "b", "c"};
   ...> \"\"\")
   iex> Luex.Table.Array.to_list(vm, array)
@@ -50,7 +52,7 @@ defmodule Luex.Table.Array do
   end
 
   @doc "build a lua array from elixir list"
-  @spec new(Luex.vm(), [Luex.lua_value()]) :: {Luex.lua_table(), Luex.vm()}
+  @spec new(Luex.vm(), [Luex.lua_value()]) :: Luex.lua_call(Luex.lua_table())
   def new(vm, input) when is_list(input) do
     acc = {1, %{}}
 
@@ -67,7 +69,7 @@ defmodule Luex.Table.Array do
 
   # Example
   ```elixir
-  iex> {_, vm} = Luex.init() |> Luex.do_inline(\"\"\"
+  iex> %Luex.Call{vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
   ...>   numbers = {"eins", "zwei"}
   ...> \"\"\")
   iex> {numbers, vm} = Luex.get_value(vm, ["numbers"])

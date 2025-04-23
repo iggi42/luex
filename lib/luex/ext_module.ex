@@ -8,8 +8,7 @@ defmodule Luex.ExtModule do
   @spec build_loader(module()) :: Luex.Functions.input()
   def build_loader(ext_module) do
     fn args, vm ->
-      dbg(args)
-      {table, vm} = apply(ext_module, :loader, [vm, args])
+      %Luex.Call{return: table, vm: vm} = apply(ext_module, :loader, [vm, args])
       {[table], vm}
     end
   end

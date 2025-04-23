@@ -2,6 +2,8 @@ defmodule Luex.Functions do
   require Luex.Records
   require Luex
 
+  alias Luex.Call
+
   @type t() :: Luex.lua_fun()
 
   @typedoc """
@@ -30,11 +32,14 @@ defmodule Luex.Functions do
   """
   @spec new(Luex.vm(), input()) :: Luex.lua_call(t())
   def new(vm, input) when Luex.is_vm(vm) and is_function(input, 2) do
-    {Luex.Records.erl_func(code: input), vm}
+    %Call{
+      return: Luex.Records.erl_func(code: input),
+      vm: vm
+    }
   end
 
   @spec call(Luex.vm(), t(), [Luex.lua_value()]) :: Luex.lua_call([Luex.lua_value()])
   def call(vm, lfun, largs) when Luex.is_vm(vm) do
-    :luerl_emul.functioncall(lfun, largs, vm)
+    :luerl_emul.functioncall(lfun, largs, vm) |> Call.from_luerl()
   end
 end

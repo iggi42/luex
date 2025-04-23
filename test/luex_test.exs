@@ -1,6 +1,7 @@
 defmodule LuexTest do
   require Luex
   use ExUnit.Case
+  alias Luex.Call, as: LCall
   doctest Luex
 
   describe "init/0" do
@@ -13,14 +14,14 @@ defmodule LuexTest do
     test "direct global level" do
       vm0 = Luex.init()
       vm1 = Luex.set_value(vm0, ["a"], "Täääst")
-      assert {["Täääst"], _vm} = Luex.do_inline(vm1, "return a")
+      assert %LCall{return: ["Täääst"]} = Luex.do_inline(vm1, "return a")
     end
 
     test "happy path: a.b.c = [[Test]]" do
       vm0 = Luex.init()
       vm1 = Luex.set_value(vm0, ["a", "b", "c"], "Test")
 
-      assert {["Test"], _vm2} = Luex.do_inline(vm1, "return a.b.c")
+      assert %LCall{return: ["Test"]} = Luex.do_inline(vm1, "return a.b.c")
     end
 
     test "set multiple path (check no overwrite)" do
@@ -29,32 +30,36 @@ defmodule LuexTest do
         |> Luex.set_value(["a", "b", "c"], "test1")
         |> Luex.set_value(["a", "c"], "test2")
 
-      assert {["test1", "test2"], _vm} = Luex.do_inline(vm, "return a.b.c, a.c")
+      assert %LCall{return: ["test1", "test2"]} = Luex.do_inline(vm, "return a.b.c, a.c")
     end
 
     test "use a table in a keypath" do
       vm = Luex.init()
-      {table, vm} = Luex.Table.new(vm, %{"key" => 1337})
+      %LCall{return: table, vm: vm} = Luex.Table.new(vm, %{"key" => 1337})
       kp = ["a", table, "c"]
       vm = Luex.set_value(vm, kp, "test2")
 
-      assert {"test2", _vm} = Luex.get_value(vm, kp)
+      assert %LCall{return: "test2"} = Luex.get_value(vm, kp)
     end
   end
 
   describe "get_value/2" do
     test "happy path: a.b.c = [[Test]]; return a" do
-      vm = Luex.init()
-      {_, vm} = Luex.do_inline(vm, "a = [[Test]]")
-      assert {"Test", _vm2} = Luex.get_value(vm, ["a"])
+      %LCall{vm: vm} = Luex.init() |> Luex.do_inline("a = [[Test]]")
+      assert %LCall{return: "Test"} = Luex.get_value(vm, ["a"])
     end
   end
 
   describe "do_inline/2" do
+
+    test "just some math and return" do 
+       assert %Luex.Call{return: [5]}  == Luex.init() |> Luex.do_inline("return 3+2")
+    end
+
     test "run some multiline code and return" do
       vm = Luex.init()
 
-      assert {["hello", 35], vm} =
+      assert %LCall{return: ["hello", 35], vm: vm} =
                Luex.do_inline(vm, """
                  local a = [[hello]]
                  local b = 35
@@ -74,7 +79,7 @@ defmodule LuexTest do
 
       @impl true
       def loader(vm) do
-        {hello, vm} = Luex.Functions.new(vm, fn [name], vm1 -> {["Hello #{name}"], vm1} end)
+        {hello, vm} = Luex.Functions.new(vm, fn [name], vm1 -> %LCall{return: ["Hello #{name}"], vm: vm1} end)
         Luex.Table.new(vm, %{"hello" => hello})
       end
     end
@@ -82,7 +87,7 @@ defmodule LuexTest do
     test "basic (happy path)" do
       vm = Luex.init() |> Luex.configure(ext_searcher: [RequireTest])
 
-      assert {["Hello Lua"], _vm} =
+      assert %LCall{return: ["Hello Lua"]} =
                Luex.do_inline(vm, """
                local rt = require("test")
                return rt.hello("Lua")

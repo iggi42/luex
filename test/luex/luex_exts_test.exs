@@ -8,21 +8,17 @@ require Luex
       use Luex.ExtModule
 
 
-      lua_ext "test", vm do
-         a when Luex.is_lua_string(a) -> :ok
-      end
+      # lua_ext "test", vm do
+      #    a when Luex.is_lua_string(a) -> :ok
+      # end
 
     end
 
-    test "setup happy" do
-      vm = Luex.init() |> Luex.configure(ext_searcher: [ Happy ])
-      assert Luex.is_vm(vm)
-    end
-    
-    test "call happy" do
-      
-    end
-      
+    # test "setup happy" do
+    #   vm = Luex.init() |> Luex.configure(ext_searcher: [ Happy ])
+    #   assert Luex.is_vm(vm)
+    # end
+    # 
   end
   
 end

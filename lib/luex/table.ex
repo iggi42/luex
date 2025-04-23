@@ -4,6 +4,8 @@ defmodule Luex.Table do
   require Luex
   require Luex.Records
 
+  alias Luex.Call
+
   @typedoc """
   Every lua type, execpt for `nil` can be used as key in a table.
   """
@@ -39,7 +41,7 @@ defmodule Luex.Table do
   """
   @spec new(Luex.vm(), %{key() => Luex.lua_value()}) :: Luex.lua_call(Luex.lua_table())
   def new(vm, input) when Luex.is_vm(vm) and is_map(input) do
-    :luerl_heap.alloc_table(input, vm)
+    :luerl_heap.alloc_table(input, vm) |> Call.from_luerl()
   end
 
   @doc """
@@ -47,12 +49,12 @@ defmodule Luex.Table do
 
   # Example
   ```elixir
-  iex> {_, vm} = Luex.init() |> Luex.do_inline(\"\"\"
+  iex> %Luex.Call{vm: vm} = Luex.init() |> Luex.do_inline(\"\"\"
   ...>   a = {}
   ...>   a.x = 42
   ...>   a.hello = "world"
   ...> \"\"\")
-  iex> {a_tref, vm} = Luex.get_value(vm, ["a"])
+  iex> %Luex.Call{return: a_tref, vm: vm} = Luex.get_value(vm, ["a"])
   iex> Luex.Table.get_data(vm, a_tref)
   %{"x" => 42, "hello" => "world"}
   ```
@@ -71,9 +73,9 @@ defmodule Luex.Table do
     end)
   end
 
-  @spec get_key(Luex.vm(), Luex.lua_table(), key()) :: {Luex.lua_value(), Luex.vm()}
+  @spec get_key(Luex.vm(), Luex.lua_table(), key()) :: Luex.lua_call(Luex.lua_value())
   def get_key(vm, tref, key) do
-    :luerl_emul.get_table_key(tref, key, vm)
+    :luerl_emul.get_table_key(tref, key, vm) |> Call.from_luerl()
   end
 
   @spec set_key(Luex.vm(), Luex.lua_table(), key(), Luex.lua_value()) :: Luex.vm()

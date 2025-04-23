@@ -4,6 +4,7 @@ defmodule LuexTableArrayTest do
   alias Luex.Table.Array
   doctest Array
   require Luex
+  alias Luex.Call, as: LCall
 
   describe "append/3" do
     # TODO add test against malformed array
@@ -30,7 +31,7 @@ defmodule LuexTableArrayTest do
 
   describe "new/2" do
     test "create simple new array (happy path)" do
-      {array, vm} = Luex.init() |> Luex.Table.Array.new(["a", "b", "c"])
+      %LCall{return: array, vm: vm} = Luex.init() |> Luex.Table.Array.new(["a", "b", "c"])
       assert %{1 => "a", 2 => "b", 3 => "c"} == Luex.Table.get_data(vm, array)
     end
   end

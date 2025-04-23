@@ -2,6 +2,7 @@ defmodule LuexFunTest do
   use ExUnit.Case
   doctest Luex.Functions
   require Luex
+  alias Luex.Call, as: LCall
 
   describe "new/2" do
     test "insert new a pure function and call it via lua" do
@@ -9,10 +10,10 @@ defmodule LuexFunTest do
 
       fun = fn
         [a, b], fun_vm when Luex.is_lua_number(a) and Luex.is_lua_number(b) ->
-          {[a + b, a * b], fun_vm}
+          %LCall{return: [a + b, a * b], vm: fun_vm}
 
         [a], fun_vm when Luex.is_lua_string(a) ->
-          {["hello " <> a], fun_vm}
+          %LCall{return: ["hello " <> a], vm: fun_vm}
       end
 
       {luerl_fun, vm} = Luex.Functions.new(vm, fun)
