@@ -173,6 +173,12 @@ defmodule Luex do
   def load_value(vm, {:userdata, payload}) when is_vm(vm), do: Luex.Userdata.new(vm, payload)
   def load_value(vm, f) when is_vm(vm) and is_function(f, 2), do: Luex.Functions.new(vm, f)
 
+  @doc """
+
+  """
+  @spec set_value(lua_call(lua_value()), keypath()) :: vm()
+  def set_value(%Luex.CallResult{vm: vm, return: r }, keypath), do: set_value(vm, keypath, r)
+  
   @spec set_value(vm(), keypath(), lua_value()) :: vm()
   def set_value(vm, keypath, value) when is_vm(vm) and is_list(keypath) and is_lua_value(value) do
     Luex.LuaError.wrap do
@@ -186,7 +192,8 @@ defmodule Luex do
     |> Luerl.set_table1(keypath, value)
   end
 
-  @spec get_value(vm(), keypath()) :: lua_call(lua_value())
+  @spec get_value(vm() | lua_call(any()), keypath()) :: lua_call(lua_value())
+  def get_value(%Luex.CallResult{vm: vm}, keypath), do: get_value(vm, keypath)
   def get_value(vm, keypath) when is_vm(vm) and is_list(keypath) do
     Luex.LuaError.wrap do
       get_value1(vm, keypath) |> CallResult.from_luerl()

@@ -20,8 +20,7 @@ defmodule Luex.Functions do
   iex> fun = fn([a], fun_vm) ->
   ...>    {["hello " <> a], fun_vm}
   ...> end
-  iex> %Luex.CallResult{return: luerl_fun, vm: vm} = Luex.init() |> Luex.Functions.new(fun)
-  iex> vm = Luex.set_value(vm, ["a", "b"], luerl_fun)
+  iex> vm = Luex.init() |> Luex.Functions.new(fun) |> Luex.set_value(["a", "b"])
   iex> %Luex.CallResult{return: result, vm: vm} = Luex.do_inline(vm, \"\"\"
   ...>   return a.b("Demo")
   ...> \"\"\")

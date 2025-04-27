@@ -3,6 +3,5 @@ defmodule Luex.Async.Promises do
 
   def loader(vm), do: vm
 
-
   @callback target() :: Luex.lua_string()
 end

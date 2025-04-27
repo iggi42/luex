@@ -9,9 +9,21 @@ defmodule LuexTest do
       assert Luex.init() |> Luex.is_vm()
     end
   end
+  describe "set_value/2" do
+    test "happy value (silly)" do
+      kp1 = ["test", "what"]
+      kp2 = ["test", "ever"]
+      vm = Luex.init()
+        |> Luex.set_value(kp1, 1337)
+        |> Luex.get_value(kp1)
+        |> Luex.set_value(kp2)
+
+      assert %Luex.CallResult{return: 1337} = Luex.get_value(vm, kp2)
+    end
+  end
 
   describe "set_value/3" do
-    test "direct global level" do
+    test "set trivial gloval variable and retreive" do
       vm0 = Luex.init()
       vm1 = Luex.set_value(vm0, ["a"], "Täääst")
       assert %LCall{return: ["Täääst"]} = Luex.do_inline(vm1, "return a")

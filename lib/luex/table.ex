@@ -44,8 +44,28 @@ defmodule Luex.Table do
     :luerl_heap.alloc_table(input, vm) |> Call.from_luerl()
   end
 
+
   @doc """
-  get data from a lua table
+  turn a call result into an elixir map. not recrusive!
+
+  # Example
+  ```elixir
+  iex>  Luex.init()
+  ...>  |> Luex.do_inline(\"\"\"
+  ...>     a = {}
+  ...>     a.x = 42
+  ...>     a.hello = "world"
+  ...>   \"\"\")
+  ...>  |> Luex.get_value(["a"])
+  ...>  |> Luex.Table.get_data()
+  %{"x" => 42, "hello" => "world"}
+  ```
+  """
+  @spec get_data(Luex.lua_call(Luex.lua_table())) :: %{key() => Luex.lua_value()}
+  def get_data(%Luex.CallResult{ vm: vm, return: table }), do: get_data(vm, table)
+
+  @doc """
+  get data from a lua table, not recursive
 
   # Example
   ```elixir
