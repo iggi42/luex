@@ -16,6 +16,12 @@ defmodule Luex.Userdata do
     :luerl_heap.alloc_userdata(payload, vm) |> LCall.from_luerl()
   end
 
+  @spec get_data(Luex.lua_call(t())) :: Luex.lua_call(payload :: any())
+  def get_data(%LCall{vm: vm, return: uref}) when Luex.Records.is_userdata(uref) do
+    get_data(vm, uref)
+  end
+
+
   @spec get_data(Luex.vm(), t()) :: Luex.lua_call(payload :: any())
   def get_data(vm, uref) when Luex.is_vm(vm) do
     {val, vm} = :luerl_heap.get_userdata(uref, vm)
@@ -24,6 +30,10 @@ defmodule Luex.Userdata do
       vm: vm
     }
   end
+
+  # not sure if this trend is going well
+  @spec set_data(Luex.lua_call(any()), t(), payload :: any()) :: Luex.vm()
+  def set_data(%Luex.CallResult{vm: vm, return: uref}, payload), do: set_data(vm, uref, payload)
 
   @spec set_data(Luex.vm(), t(), payload :: any()) :: Luex.vm()
   def set_data(vm, uref, payload) do

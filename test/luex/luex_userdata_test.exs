@@ -32,4 +32,17 @@ defmodule LuexUserdataTest do
     assert Luex.is_vm(vm)
     assert output_data == input_data
   end
+
+  test "create, update and retrieve a simple userdata via resultcall pipeline" do
+    input_data = {:nice_6, make_ref(), self()}
+
+    # pipeline didn't elegantly work here, because we need the uref value extracted "mid" pipeline
+    cr = %LCall{return: uref} = Luex.init() |> Luex.Userdata.new(:lol)
+ 
+   assert cr
+    |> Luex.Userdata.set_data(input_data)
+    |> Luex.Userdata.get_data(uref)
+    |> then(&( &1.return ))
+    == input_data
+  end
 end
