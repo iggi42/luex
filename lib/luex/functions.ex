@@ -21,7 +21,7 @@ defmodule Luex.Functions do
   ...>    {["hello " <> a], fun_vm}
   ...> end
   iex> vm = Luex.init() |> Luex.Functions.new(fun) |> Luex.set_value(["a", "b"])
-  iex> %Luex.CallResult{return: result, vm: vm} = Luex.do_inline(vm, \"\"\"
+  iex> %Luex.CallResult{return: result} = Luex.do_inline(vm, \"\"\"
   ...>   return a.b("Demo")
   ...> \"\"\")
   iex> result

@@ -1,4 +1,5 @@
 defmodule Luex.Async.Server do
+  @moduledoc false
   use GenServer
 
   defmodule __MODULE__.State do
