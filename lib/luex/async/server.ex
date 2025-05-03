@@ -3,6 +3,7 @@ defmodule Luex.Async.Server do
   use GenServer
 
   defmodule __MODULE__.State do
+    @moduledoc false
     defstruct [:vm]
   end
 

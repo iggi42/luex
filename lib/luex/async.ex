@@ -1,4 +1,6 @@
 defmodule Luex.Async do
+  @moduledoc false 
+
   @typedoc """
   # config options
    - `:boot_args` : map function of lua vm to configure said vm on server start
